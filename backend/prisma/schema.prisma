@@ -1,0 +1,61 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "app/generated/prisma/client"
+}
+
+enum MedicineUnit {
+  PILLS
+  ML
+  MG
+  G
+}
+
+model User {
+  id         String     @id @default(uuid())
+  username   String     @unique
+  password   String
+  medicines  UserMedicine[] 
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model PresetMedicine {
+  id          String     @id @default(uuid()) 
+  name        String
+  category    String
+  unit        MedicineUnit
+  description String?
+  isFDA       Boolean    @default(true) 
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model UserMedicine {
+  id            String       @id @default(uuid()) 
+  name          String       
+  category      String       
+  unit          MedicineUnit
+  quantity      Int          
+  expiryDate    DateTime
+  isPreset      Boolean      @default(false) 
+  
+  startDate     DateTime?
+  endDate       DateTime?
+  dosagePerDay  Float?
+  prescription  String?
+
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+
+  presetMedicineId String?      
+  presetMedicine   PresetMedicine? @relation(fields: [presetMedicineId], references: [id])
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
