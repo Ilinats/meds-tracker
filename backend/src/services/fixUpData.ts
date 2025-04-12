@@ -16,7 +16,7 @@ const readPrecautionFromFile = (medicationName: string): string | null => {
     }
   };
 
-export async function FixData() {
+export async function fixData() {
   const medicationData = await fetchFdaMedications();
 
   for (let medicine of medicationData) {
@@ -34,6 +34,6 @@ export async function FixData() {
   return medicationData;
 }
 
-FixData().catch((error) => {
+fixData().catch((error) => {
   console.error('Error fixing data:', error);
 });
