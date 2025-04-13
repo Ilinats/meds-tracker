@@ -1,6 +1,6 @@
 ///DUE TO PROBLEMS WITH THE API NOT FETCHING DATA
 ///THAT IS VERY OBVIUSLY THERE I NEED TO DO THIS
-import { fetchFdaMedications } from './fdaFetcher';
+import { fetchFdaMedications } from '../services/fdaFetcher';
 import * as fs from 'fs';
 import * as path from 'path';
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { fetchFdaMedications } from './fdaFetcher'
-import { fixData } from './fixUpData';
+import { fixData } from '../utils/fixUpData';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

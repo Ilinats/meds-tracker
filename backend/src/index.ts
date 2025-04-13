@@ -15,10 +15,10 @@ app.get('/ping', (req, res) => {
   res.send('Pong from Meds Tracker API!');
 });
 
-app.get('/medicines', async (req, res) => {
-  const medicines = await prisma.medicine.findMany();  
-  res.json(medicines);
-});
+// app.get('/medicines', async (req, res) => {
+//   const medicines = await prisma.medicine.findMany();  
+//   res.json(medicines);
+// });
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
