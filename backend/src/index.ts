@@ -1,7 +1,10 @@
+// src/index.ts or server.ts (wherever this lives)
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '../prisma/app/generated/prisma/client';
+
+import medicineRoutes from './routes/medicineRoutes';
 
 dotenv.config();
 
@@ -11,14 +14,11 @@ app.use(express.json());
 
 const prisma = new PrismaClient();
 
+app.use('/api', medicineRoutes);
+
 app.get('/ping', (req, res) => {
   res.send('Pong from Meds Tracker API!');
 });
-
-// app.get('/medicines', async (req, res) => {
-//   const medicines = await prisma.medicine.findMany();  
-//   res.json(medicines);
-// });
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

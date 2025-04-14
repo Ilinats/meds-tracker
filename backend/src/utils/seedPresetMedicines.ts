@@ -28,12 +28,12 @@ async function main() {
     });
   }
 
-  console.log('✅ Preset medicines inserted successfully.');
+  console.log('Preset medicines inserted successfully.');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error inserting medicines:', e);
+    console.error('Error inserting medicines:', e);
   })
   .finally(async () => {
     await prisma.$disconnect();
