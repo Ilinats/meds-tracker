@@ -7,7 +7,12 @@ import {
   getAllPresetMedicines,
   getUserMedicines,
   updateUserMedicine
-} from './medicineController';
+} from './medicineCrud';
+
+import {
+    getExpiringMedicines,
+    getLowStockMedicines
+} from './medicineChecks'
 
 const router = express.Router();
 
@@ -18,5 +23,7 @@ router.delete('/collection/:id', removeFromCollection);
 router.get('/presets', getAllPresetMedicines);
 router.get('/collection', getUserMedicines);
 router.put('/collection/:id', updateUserMedicine);
+router.get('/expiring', getExpiringMedicines);
+router.get('/low-stock', getLowStockMedicines);
 
 export default router;
