@@ -1,4 +1,4 @@
-import { PrismaClient, MedicineUnit } from '../../prisma/app/generated/prisma/client';
+import { PrismaClient, MedicineUnit, Prisma } from '../../prisma/app/generated/prisma/client';
 import { Request, Response } from 'express';
 
 const prisma = new PrismaClient();
@@ -247,4 +247,3 @@ export const updateUserMedicine = async (req: AuthRequest, res: Response) => {
   }
 };
 
-  

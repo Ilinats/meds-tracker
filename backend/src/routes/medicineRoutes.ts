@@ -1,12 +1,14 @@
 // src/routes/medicineRoutes.ts
 import express from 'express';
 // import { authMiddleware } from '../middleware/auth';
+import { Request, Response } from 'express';
+import { PrismaClient } from '../../prisma/app/generated/prisma/client';
 import {
   addToCollection,
   removeFromCollection,
   getAllPresetMedicines,
   getUserMedicines,
-  updateUserMedicine
+  updateUserMedicine,
 } from './medicineCrud';
 
 import {
@@ -14,7 +16,17 @@ import {
     getLowStockMedicines
 } from './medicineChecks'
 
+import { searchMedicines } from './searchController';
+
 const router = express.Router();
+
+const prisma = new PrismaClient();
+
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+  };
+}
 
 // router.use(authMiddleware);
 
@@ -25,5 +37,6 @@ router.get('/collection', getUserMedicines);
 router.put('/collection/:id', updateUserMedicine);
 router.get('/expiring', getExpiringMedicines);
 router.get('/low-stock', getLowStockMedicines);
+router.get('/search', searchMedicines);
 
 export default router;
