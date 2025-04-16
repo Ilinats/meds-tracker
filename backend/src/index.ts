@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '../prisma/app/generated/prisma/client';
+import authRoutes from './routes/authRoutes'; // 👈 import it at the top
 
 import medicineRoutes from './routes/medicineRoutes';
 
@@ -15,6 +16,8 @@ app.use(express.json());
 const prisma = new PrismaClient();
 
 app.use('/api', medicineRoutes);
+app.use('/api/auth', authRoutes); // 👈 this line mounts the auth endpoints
+
 
 app.get('/ping', (req, res) => {
   res.send('Pong from Meds Tracker API!');
