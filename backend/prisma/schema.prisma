@@ -16,13 +16,15 @@ enum MedicineUnit {
 }
 
 model User {
-  id             String           @id @default(uuid())
-  username       String           @unique
-  password       String
-  medicines      UserMedicine[] 
-  schedules      MedicineSchedule[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id                    String              @id @default(uuid())
+  username              String              @unique
+  password              String
+  pushToken             String?   
+  medicines             UserMedicine[] 
+  schedules             MedicineSchedule[]
+  medicineTakenRecords  MedicineTaken[]     // ✅ This is the missing relation!
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 }
 
 model PresetMedicine {
@@ -72,6 +74,18 @@ model UserMedicine {
   updatedAt        DateTime         @updatedAt
 }
 
+model MedicineTaken {
+  id              String           @id @default(uuid())
+  scheduleId      String
+  schedule        MedicineSchedule @relation(fields: [scheduleId], references: [id])
+  takenAt         DateTime         @default(now())
+  dosageAmount    Float
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime         @default(now())
+}
+
 model MedicineSchedule {
   id              String       @id @default(uuid())
   userMedicineId  String
@@ -87,4 +101,5 @@ model MedicineSchedule {
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+  takenRecords    MedicineTaken[]  // Add this field
 }
