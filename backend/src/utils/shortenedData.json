@@ -1,0 +1,239 @@
+{
+    "lisinopril": {
+      "name": "Lisinopril",
+      "category": "High Blood Pressure",
+      "unit": "PILLS",
+      "description": "Lisinopril is an oral long-acting ACE inhibitor used to treat hypertension, heart failure, and myocardial infarction. It is chemically described as (S)-1-[N²-(1-carboxy-3-phenylpropyl)-L-lysyl]-L-proline dihydrate and available in 2.5 mg to 40 mg tablets.",
+      "precautions": [
+        "Monitor renal function in patients with renal impairment, aortic stenosis, or hypertrophic cardiomyopathy.",
+        "Hyperkalemia risk (avoid potassium supplements/salt substitutes, especially in renal insufficiency or diabetes).",
+        "Angioedema (swelling of face/throat) may occur; discontinue immediately if symptoms arise.",
+        "Symptomatic hypotension possible, especially in volume-depleted patients (e.g., on diuretics).",
+        "Persistent dry cough may develop due to ACE inhibition.",
+        "NSAIDs may reduce antihypertensive effects and worsen renal function.",
+        "Risk of lithium toxicity if co-administered; monitor serum lithium levels.",
+        "Contraindicated in pregnancy (risk of fetal harm or death)."
+      ],
+      "dosage_and_administration": [
+        "Hypertension: Initial dose 10 mg once daily; adjust to 20–40 mg as needed.",
+        "Heart failure: Start at 5 mg daily; titrate up to 40 mg if tolerated.",
+        "Myocardial infarction: 5 mg within 24 hours, 5 mg after 24 hours, 10 mg after 48 hours, then 10 mg daily for 6 weeks.",
+        "Renal impairment: Reduce dose (e.g., 2.5 mg if CrCl < 10 mL/min).",
+        "Pediatrics (≥6 years): 0.07 mg/kg once daily (max 40 mg)."
+      ],
+      "adverse_reactions": [
+        "Common: Dizziness, hypotension, dry cough, headache, hyperkalemia.",
+        "Serious: Angioedema, acute renal failure, neutropenia, fetal toxicity.",
+        "Rare: Stevens-Johnson syndrome, toxic epidermal necrolysis, hepatic injury."
+      ]
+    },
+    "amlodipine": {
+        "name": "Amlodipine",
+        "category": "High Blood Pressure",
+        "unit": "PILLS",
+        "description": "Amlodipine is a long-acting calcium channel blocker used to treat hypertension and angina. Chemically, it is a dihydropyridine derivative with the molecular formula C20H25ClN2O5. It is available as 2.5 mg, 5 mg, and 10 mg tablets.",
+        "precautions": [
+        "Use with caution in patients with severe aortic stenosis or heart failure due to risk of worsening symptoms.",
+        "Monitor for hypotension, especially in volume-depleted patients or those on concurrent diuretics.",
+        "Peripheral edema (swelling of ankles/feet) is a common dose-dependent side effect.",
+        "Avoid abrupt discontinuation in angina patients to prevent rebound ischemia.",
+        "Hepatic impairment may increase systemic exposure; consider lower starting doses.",
+        "Use in pregnancy only if clearly needed (Category C). Safety in lactation is unknown.",
+        "May increase exposure to simvastatin (limit simvastatin to 20 mg daily if co-administered)."
+        ],
+        "dosage_and_administration": [
+        "Hypertension: Start at 5 mg once daily; may increase to 10 mg if needed (max 10 mg/day).",
+        "Chronic Stable/Angina: Start at 5 mg once daily; may increase to 10 mg (max 10 mg/day).",
+        "Vasospastic Angina: Start at 5 mg once daily; lower dose (2.5 mg) may be used in small/frail patients.",
+        "Renal Impairment: No dosage adjustment required.",
+        "Hepatic Impairment: Start at 2.5 mg once daily; titrate cautiously.",
+        "Geriatric Patients: Consider lower starting dose (2.5 mg).",
+        "Pediatrics: Not recommended for children <6 years. For ages 6–17, 2.5–5 mg once daily."
+        ],
+        "adverse_reactions": [
+        "Common: Peripheral edema (7–10%), dizziness (3%), flushing (2–3%), headache (7%), fatigue (4%).",
+        "Serious: Severe hypotension, worsening angina/MI (rare), arrhythmias (e.g., bradycardia).",
+        "Rare: Allergic reactions (rash, pruritus), gingival hyperplasia, hepatitis, jaundice.",
+        "Post-marketing: Torsades de pointes, leukopenia, thrombocytopenia, hyperglycemia."
+        ]
+    },
+    "fluconazole": {
+        "name": "Fluconazole",
+        "category": "Antifungal (Triazole)",
+        "unit": "PILLS",
+        "description": "Fluconazole is a triazole antifungal medication used to treat fungal infections including candidiasis and others. It is available as tablets (50 mg, 100 mg, 150 mg, 200 mg) and oral suspension (10 mg/mL or 40 mg/mL after reconstitution).",
+        "precautions": [
+        "Risk of QT prolongation and torsade de pointes; use with caution in patients with proarrhythmic conditions (e.g., structural heart disease, electrolyte imbalances).",
+        "Avoid concomitant use with erythromycin due to increased cardiotoxicity risk.",
+        "Dose adjustment required in renal impairment (reduce dose by 50% if CrCl ≤50 mL/min).",
+        "Potent CYP2C9 and moderate CYP3A4 inhibitor; monitor narrow-therapeutic-window drugs metabolized by these enzymes.",
+        "Contraindicated with terfenadine, cisapride, astemizole, pimozide, or quinidine (risk of fatal arrhythmias).",
+        "Oral suspension contains sucrose; avoid in hereditary fructose intolerance or sucrase-isomaltase deficiency.",
+        "May cause dizziness or seizures; caution when driving/operating machinery.",
+        "Single 150 mg dose for vaginal candidiasis has higher adverse event rate (26%) vs. intravaginal agents (16%)."
+        ],
+        "dosage_and_administration": [
+        "Oropharyngeal candidiasis: 200 mg on Day 1, then 100 mg once daily for ≥2 weeks.",
+        "Esophageal candidiasis: 200 mg on Day 1, then 100 mg once daily (up to 400 mg if needed) for ≥3 weeks.",
+        "Pediatric dosing: 6 mg/kg on Day 1, then 3–12 mg/kg/day based on infection (max 600 mg/day).",
+        "Renal impairment: Reduce dose by 50% if CrCl ≤50 mL/min; post-dialysis patients receive full dose after each session.",
+        "Oral suspension: Shake well before use. Store at 5–30°C; discard unused portion after 2 weeks."
+        ],
+        "adverse_reactions": [
+        "Common (≥1%): Headache, nausea, abdominal pain, diarrhea, rash, vomiting, dizziness.",
+        "Serious: Hepatotoxicity (elevated LFTs, hepatitis, fulminant failure), QT prolongation, anaphylaxis, Stevens-Johnson syndrome.",
+        "Rare: Seizures, alopecia, hypertriglyceridemia, hypokalemia, acute renal failure.",
+        "Pediatrics: Similar to adults; vomiting (5%) and elevated transaminases most frequent."
+        ]
+    },
+    "glipizide": {
+        "name": "Glipizide",
+        "category": "Diabetes",
+        "unit": "PILLS",
+        "description": "Glipizide is an oral blood glucose-lowering drug of the sulfonylurea class used to treat type 2 diabetes mellitus. It is chemically designated as 1-cyclohexyl-3-[[p-[2-(5-methylpyrazinecarboxamido)ethyl]phenyl]sulfonyl]urea with molecular formula C21H27N5O4S.",
+        "precautions": [
+        "Use with caution in elderly, debilitated, or malnourished patients due to increased risk of hypoglycemia.",
+        "May cause hemolytic anemia in patients with glucose-6-phosphate dehydrogenase (G6PD) deficiency.",
+        "Risk of hypoglycemia is increased with renal/hepatic impairment, adrenal/pituitary insufficiency, or alcohol use.",
+        "Stress (e.g., fever, trauma, surgery) may require temporary insulin therapy.",
+        "Discontinue if jaundice occurs (rare reports of hepatic porphyria and cholestatic hepatitis).",
+        "Monitor patients switching from insulin to glipizide for hypoglycemia during transition period.",
+        "Secondary failure may occur after prolonged use; monitor blood glucose regularly.",
+        "May increase cardiovascular mortality compared to diet or insulin therapy (per UGDP study)."
+        ],
+        "dosage_and_administration": [
+        "Initial dose: 5 mg once daily, 30 minutes before breakfast.",
+        "Elderly/debilitated patients: Start with 2.5 mg daily.",
+        "Maintenance: Increase by 2.5–5 mg weekly (max 40 mg/day). Doses >15 mg/day should be divided.",
+        "Extended-release tablets: Start with 5 mg once daily with breakfast (max 20 mg/day).",
+        "Renal impairment: Use caution; lower doses may be required.",
+        "Hepatic impairment: Avoid in severe cases; monitor closely.",
+        "Missed dose: Skip if close to next dose; do not double dose."
+        ],
+        "adverse_reactions": [
+        "Common (≥1%): Hypoglycemia, dizziness, nausea, diarrhea, constipation.",
+        "Serious: Severe hypoglycemia (especially with renal impairment), hemolytic anemia, hepatic dysfunction.",
+        "Rare: Allergic reactions (rash, pruritus), syndrome of inappropriate antidiuretic hormone (SIADH).",
+        "Cardiovascular: Possible increased mortality risk (controversial)."
+        ]
+    },
+    "atorvastatin": {
+        "name": "Atorvastatin",
+        "category": "Cholesterol-lowering",
+        "unit": "PILLS",
+        "description": "Atorvastatin is an HMG-CoA reductase inhibitor (statin) used to lower cholesterol and reduce cardiovascular risk. It is chemically described as [R-(R*,R*)]-2-(4-fluorophenyl)-β,δ-dihydroxy-5-(1-methylethyl)-3-phenyl-4-[(phenylamino)carbonyl]-1H-pyrrole-1-heptanoic acid, calcium salt (2:1). Available as 10 mg, 20 mg, 40 mg, and 80 mg tablets.",
+        "precautions": [
+        "Risk of myopathy/rhabdomyolysis; monitor for muscle pain/weakness, especially with higher doses or concomitant CYP3A4 inhibitors.",
+        "Contraindicated in active liver disease or unexplained persistent liver enzyme elevations.",
+        "Monitor liver enzymes before treatment initiation and as clinically indicated thereafter.",
+        "May increase HbA1c and fasting serum glucose levels (monitor diabetics).",
+        "Use with caution in patients consuming substantial alcohol or with history of liver disease.",
+        "Discontinue if myopathy is diagnosed or suspected, or if CK levels rise significantly.",
+        "Risk of hemorrhagic stroke in patients with recent stroke/TIA at goal LDL-C <65 mg/dL.",
+        "Not recommended during pregnancy (risk of fetal harm) or breastfeeding."
+        ],
+        "dosage_and_administration": [
+        "Primary hypercholesterolemia: Start 10–20 mg once daily (range 10–80 mg/day).",
+        "Heterozygous familial hypercholesterolemia (pediatrics 10–17 years): Start 10 mg/day (max 20 mg/day).",
+        "Homozygous familial hypercholesterolemia: 10–80 mg daily (often with other lipid-lowering therapies).",
+        "Cardiovascular prevention: Start 40–80 mg daily for high-risk patients.",
+        "Renal impairment: No dose adjustment needed.",
+        "Geriatric patients: Consider lower starting doses.",
+        "Take with or without food; evening dosing not required (unlike some other statins)."
+        ],
+        "adverse_reactions": [
+        "Common (≥2%): Nasopharyngitis, arthralgia, diarrhea, pain in extremity, urinary tract infection, dyspepsia, nausea.",
+        "Serious: Myopathy/rhabdomyolysis, liver enzyme abnormalities, hemorrhagic stroke (rare)."
+        ]
+    },
+    "simvastatin": {
+        "name": "Simvastatin",
+        "category": "Cholesterol-lowering",
+        "unit": "PILLS",
+        "description": "Simvastatin is an HMG-CoA reductase inhibitor (statin) used to lower cholesterol and reduce cardiovascular risk. It is chemically described as butanoic acid, 2,2-dimethyl-,1,2,3,7,8,8a-hexahydro-3,7-dimethyl-8-[2-(tetrahydro-4-hydroxy-6-oxo-2H-pyran-2-yl)-ethyl]-1-naphthalenyl ester, [1S-[1α,3α,7β,8β(2S*,4S*),-8aβ]]. Available as 5 mg, 10 mg, 20 mg, 40 mg, and 80 mg tablets.",
+        "precautions": [
+        "Risk of myopathy/rhabdomyolysis; highest with 80 mg dose or with concomitant CYP3A4 inhibitors (avoid with strong inhibitors).",
+        "Contraindicated with concomitant cyclosporine, danazol, gemfibrozil, or strong CYP3A4 inhibitors.",
+        "Monitor liver enzymes before treatment initiation and as clinically indicated (discontinue if persistent elevations occur).",
+        "Increased risk of hemorrhagic stroke in patients with recent stroke/TIA at goal LDL-C <70 mg/dL.",
+        "May increase HbA1c and fasting serum glucose levels (monitor diabetics).",
+        "Use with caution in patients consuming substantial alcohol or with history of liver disease.",
+        "Discontinue if myopathy is diagnosed or suspected, or if CK levels rise significantly.",
+        "Not recommended during pregnancy (risk of fetal harm) or breastfeeding."
+        ],
+        "dosage_and_administration": [
+        "Hyperlipidemia: Start 10–20 mg once daily in evening (range 5–40 mg/day).",
+        "Homozygous familial hypercholesterolemia: 40 mg daily in evening (max 80 mg/day).",
+        "Cardiovascular prevention: 20–40 mg daily in evening for high-risk patients.",
+        "Renal impairment: Start 5 mg daily if CrCl <30 mL/min; avoid 80 mg dose.",
+        "Concomitant therapy restrictions: Avoid >10 mg/day with amiodarone, amlodipine, ranolazine.",
+        "Geriatric patients: Consider lower starting doses.",
+        "Take in evening (greater efficacy with nighttime dosing).",
+        "Dosage adjustments based on LDL-C response (typically after 4 weeks)."
+        ],
+        "adverse_reactions": [
+        "Common (≥2%): Headache, abdominal pain, constipation, nausea, myalgia.",
+        "Serious: Myopathy/rhabdomyolysis, liver enzyme abnormalities, hemorrhagic stroke (rare)."
+        ]
+    },
+    "gabapentin": {
+        "name": "Nerve Pain",
+        "category": "Anticonvulsant / Neuropathic Pain Agent",
+        "unit": "PILLS",
+        "description": "Gabapentin is an antiepileptic drug (AED) described as 1-(aminomethyl)cyclohexaneacetic acid with a molecular formula of C9H17NO2. It is used for postherpetic neuralgia and as adjunctive therapy for partial seizures. Available as 600 mg and 800 mg tablets containing inactive ingredients like mannitol, hydroxypropyl cellulose, and magnesium stearate.",
+        "precautions": [
+        "May increase risk of suicidal thoughts/behavior - monitor for mood/behavior changes.",
+        "Causes dizziness/somnolence - avoid driving/operating machinery until effects are known.",
+        "Concomitant morphine increases gabapentin concentrations - monitor for CNS depression.",
+        "Pregnancy Category C - risk of fetal harm; encourage enrollment in NAAED Pregnancy Registry (1-888-233-2334).",
+        "Secreted in breast milk - use only if benefits outweigh risks to infant.",
+        "Elderly patients may require dose adjustment due to decreased renal function.",
+        "False positive urinary protein tests possible - use sulfosalicylic acid method for confirmation.",
+        "Maalox reduces bioavailability by 20% - administer gabapentin at least 2 hours after antacids."
+        ],
+        "dosage_and_administration": [
+        "Postherpetic neuralgia: Start 300 mg Day 1, 600 mg Day 2 (divided BID), 900 mg Day 3 (divided TID). Titrate to 1800 mg/day (divided TID).",
+        "Epilepsy (≥12 years): 900-1800 mg/day divided TID, starting at 300 mg TID.",
+        "Pediatric epilepsy (3-12 years): Start 10-15 mg/kg/day divided TID, effective dose 25-35 mg/kg/day (40 mg/kg/day for ages 3-4).",
+        "Renal impairment: Adjust based on creatinine clearance (30-59 mL/min: 200-700 mg/day; 15-29 mL/min: 100-300 mg/day).",
+        "Hemodialysis: Supplemental dose (125-350 mg) after each session.",
+        "Discontinue gradually over ≥1 week.",
+        "Tablets can be broken but unused halves should be discarded after several days."
+        ],
+        "adverse_reactions": [
+        "Common (≥1%): Dizziness (28%), somnolence (21%), peripheral edema (8%), fatigue, ataxia, nystagmus.",
+        "Postherpetic neuralgia: Withdrawals due to dizziness, somnolence, nausea.",
+        "Pediatric epilepsy: Viral infection, fever, nausea/vomiting, hostility.",
+        "Serious: Suicidal behavior, angioedema, Stevens-Johnson syndrome, withdrawal symptoms."
+        ]
+    },
+    "carbamazepine": {
+        "name": "Carbamazepine",
+        "category": "Nerve Pain",
+        "unit": "PILLS",
+        "description": "Carbamazepine is an anticonvulsant and mood-stabilizing drug primarily used to treat epilepsy and bipolar disorder. It is also effective for trigeminal neuralgia. Chemically, it is a dibenzazepine derivative with a structure similar to tricyclic antidepressants. Available in tablet, chewable, and extended-release forms.",
+        "precautions": [
+        "Risk of severe dermatologic reactions (e.g., Stevens-Johnson syndrome, toxic epidermal necrolysis) - screen for HLA-B*1502 allele in high-risk populations.",
+        "May cause aplastic anemia or agranulocytosis - monitor CBC and discontinue if significant hematologic abnormalities occur.",
+        "Contraindicated with MAOIs or within 14 days of their use due to risk of hypertensive crisis.",
+        "Induces CYP3A4 - reduces efficacy of hormonal contraceptives, warfarin, and other CYP3A4 substrates.",
+        "Hyponatremia risk - monitor serum sodium levels, especially in elderly patients.",
+        "Suicidal ideation/behavior risk - monitor for mood changes, depression, or unusual behavior.",
+        "Avoid in patients with porphyria or history of bone marrow suppression.",
+        "Pregnancy Category D - risk of fetal malformations (e.g., neural tube defects). Use only if benefits outweigh risks."
+        ],
+        "dosage_and_administration": [
+        "Epilepsy: Start 200 mg BID, titrate weekly by 200 mg/day to maintenance dose (800–1200 mg/day in divided doses). Max 1600 mg/day.",
+        "Trigeminal neuralgia: Start 100 mg BID, increase by 200 mg/day until pain relief (usual range 400–800 mg/day).",
+        "Bipolar disorder: 200 mg BID, adjust based on response (typical range 400–1600 mg/day).",
+        "Pediatric dosing (≥6 years): 10–20 mg/kg/day in 2–4 divided doses.",
+        "Extended-release tablets: Administer BID (do not crush/chew).",
+        "Renal/hepatic impairment: Reduce dose; monitor levels.",
+        "Discontinue gradually to avoid withdrawal seizures."
+        ],
+        "adverse_reactions": [
+        "Common (≥5%): Dizziness, drowsiness, nausea, vomiting, diplopia, ataxia.",
+        "Serious: Dermatologic reactions (SJS/TEN), blood dyscrasias (aplastic anemia, agranulocytosis), hyponatremia, hepatitis."
+        ]
+    }
+}

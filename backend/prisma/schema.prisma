@@ -1,0 +1,105 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "app/generated/prisma/client"
+}
+
+enum MedicineUnit {
+  PILLS
+  ML
+  MG
+  G
+}
+
+model User {
+  id                    String              @id @default(uuid())
+  username              String              @unique
+  password              String
+  pushToken             String?   
+  medicines             UserMedicine[] 
+  schedules             MedicineSchedule[]
+  medicineTakenRecords  MedicineTaken[]     
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}
+
+model PresetMedicine {
+  id                   String     @id @default(uuid()) 
+  name                 String     @unique
+  category             String
+  unit                 MedicineUnit
+  description          String?
+  precautions          String[]
+  adverseReactions     String[]
+  dosageInstructions   String[]
+  isFDA                Boolean    @default(true)
+
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  userMedicines        UserMedicine[] 
+
+  @@index([name])
+  @@index([category])
+}
+
+
+model UserMedicine {
+  id               String           @id @default(uuid()) 
+  name             String
+  category         String
+  unit             MedicineUnit
+  quantity         Int
+  expiryDate       DateTime
+  isPreset         Boolean          @default(false)
+
+  startDate        DateTime?
+  endDate          DateTime?
+  dosagePerDay     Float?
+  prescription     String?
+
+  userId           String
+  user             User             @relation(fields: [userId], references: [id])
+
+  presetMedicineId String?
+  presetMedicine   PresetMedicine?  @relation(fields: [presetMedicineId], references: [id])
+
+  schedules        MedicineSchedule[]
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model MedicineTaken {
+  id              String           @id @default(uuid())
+  scheduleId      String
+  schedule        MedicineSchedule @relation(fields: [scheduleId], references: [id])
+  takenAt         DateTime         @default(now())
+  dosageAmount    Float
+  userId          String
+  user            User             @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime         @default(now())
+}
+
+model MedicineSchedule {
+  id              String       @id @default(uuid())
+  userMedicineId  String
+  userMedicine    UserMedicine @relation(fields: [userMedicineId], references: [id])
+
+  timesOfDay      String[]     // e.g., ["08:00", "14:00"]
+  repeatDays      String[]     // e.g., ["Mon", "Wed", "Fri"]
+  dosageAmount    Float
+  isActive        Boolean      @default(true)
+
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  takenRecords    MedicineTaken[] 
+}
