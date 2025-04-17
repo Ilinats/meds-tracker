@@ -49,7 +49,6 @@ router.get('/expiring', authMiddleware, getExpiringMedicines);
 router.get('/low-stock', authMiddleware, getLowStockMedicines);
 router.get('/search', authMiddleware, searchMedicines);
 
-// This route does NOT need auth
 router.get('/presets', getAllPresetMedicines);
 
 export default router;

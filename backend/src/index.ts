@@ -3,7 +3,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '../prisma/app/generated/prisma/client';
-import authRoutes from './routes/authRoutes'; // 👈 import it at the top
+import authRoutes from './routes/authRoutes'; 
+import { DailyCheckService } from './services/dailyCheckService';
+import schedule from 'node-schedule';
 
 import medicineRoutes from './routes/medicineRoutes';
 
@@ -16,7 +18,7 @@ app.use(express.json());
 const prisma = new PrismaClient();
 
 app.use('/api', medicineRoutes);
-app.use('/api/auth', authRoutes); // 👈 this line mounts the auth endpoints
+app.use('/api/auth', authRoutes);
 
 
 app.get('/ping', (req, res) => {
@@ -26,4 +28,13 @@ app.get('/ping', (req, res) => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+});
+
+schedule.scheduleJob('0 0 * * *', async () => {
+  await DailyCheckService.checkLowStock();
+  await DailyCheckService.checkExpiringMedicines();
+});
+
+schedule.scheduleJob('* * * * *', async () => {
+  await DailyCheckService.checkDailySchedule();
 });

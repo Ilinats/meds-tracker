@@ -1,4 +1,3 @@
-// src/controllers/searchController.ts
 import { Request, Response } from 'express';
 import { PrismaClient } from '../../prisma/app/generated/prisma/client';
 
@@ -22,7 +21,7 @@ function startsWithAnyWord(text: string, searchWords: string[]): boolean {
 export const searchMedicines = async (req: Request, res: Response) => {
     try {
       const { query = '' } = req.query;
-      const userId = "f6960d1a-db9a-46c5-b76d-147fd7743e76"; // Replace with `req.user?.id` when auth is wired up
+      const userId = "f6960d1a-db9a-46c5-b76d-147fd7743e76"; 
   
       if (typeof query !== 'string') {
             res.status(400).json({
@@ -34,7 +33,6 @@ export const searchMedicines = async (req: Request, res: Response) => {
   
       const searchWords = query.trim().toLowerCase().split(/\s+/);
   
-      // 1. Search in PresetMedicine
       const presetResults = await prisma.presetMedicine.findMany({
         where: {
           OR: [
@@ -61,7 +59,6 @@ export const searchMedicines = async (req: Request, res: Response) => {
         );
       });
   
-      // 2. Search in User-created custom medicines
       const userCustomMeds = await prisma.userMedicine.findMany({
         where: {
           userId,
@@ -89,8 +86,7 @@ export const searchMedicines = async (req: Request, res: Response) => {
           startsWithAnyWord(med.category, searchWords)
         );
       });
-  
-      // Merge results
+
       const results = [
         ...filteredPreset.map(med => ({ ...med, type: 'preset' })),
         ...filteredCustom.map(med => ({ ...med, type: 'custom' })),

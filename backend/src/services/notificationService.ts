@@ -1,4 +1,3 @@
-// src/services/notificationService.ts
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
 import { PrismaClient } from '../../prisma/app/generated/prisma/client';
 

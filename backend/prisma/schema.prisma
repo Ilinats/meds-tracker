@@ -22,7 +22,7 @@ model User {
   pushToken             String?   
   medicines             UserMedicine[] 
   schedules             MedicineSchedule[]
-  medicineTakenRecords  MedicineTaken[]     // ✅ This is the missing relation!
+  medicineTakenRecords  MedicineTaken[]     
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
 }
@@ -41,7 +41,7 @@ model PresetMedicine {
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
 
-  userMedicines        UserMedicine[]  // Add this field for the reverse relation
+  userMedicines        UserMedicine[] 
 
   @@index([name])
   @@index([category])
@@ -101,5 +101,5 @@ model MedicineSchedule {
 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-  takenRecords    MedicineTaken[]  // Add this field
+  takenRecords    MedicineTaken[] 
 }
