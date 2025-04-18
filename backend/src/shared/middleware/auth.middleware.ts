@@ -1,13 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { AuthRequest } from '../types/express.types';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'taen-kluch'; 
-
-export interface AuthRequest extends Request {
-  user?: {
-    id: string;
-  };
-}
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export const authMiddleware = async (
   req: AuthRequest,
