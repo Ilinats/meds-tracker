@@ -1,20 +1,27 @@
-import { PrismaClient } from '@prisma/client';
+// src/tests/setup.ts
+import { PrismaClient } from '../../prisma/app/generated/prisma/client';
+import dotenv from 'dotenv';
+
+// Load test environment variables
+process.env.NODE_ENV = 'test';
+dotenv.config({ path: '.env.test' });
 
 const prisma = new PrismaClient();
 
-beforeAll(async () => {
-  await prisma.$connect();
-});
-
-afterAll(async () => {
-  await prisma.$disconnect();
-});
-
-afterEach(async () => {
-  const tables = ['User'];
-  for (const table of tables) {
-    await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${table}" CASCADE;`);
+// Global setup
+export default async function globalSetup() {
+  // Ensure we're using test database
+  if (!process.env.DATABASE_URL?.includes('test')) {
+    throw new Error('Tests must be run against a test database!');
   }
-});
 
-jest.setTimeout(3000);
+  // Clean up database
+  await prisma.$transaction([
+    prisma.medicineTaken.deleteMany(),
+    prisma.medicineSchedule.deleteMany(),
+    prisma.userMedicine.deleteMany(),
+    prisma.user.deleteMany(),
+  ]);
+
+  await prisma.$disconnect();
+}

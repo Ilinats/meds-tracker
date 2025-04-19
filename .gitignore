@@ -9,4 +9,6 @@ node_modules/
 
 */k8s/secret.yaml
 
+backend/src/generated/*
+
 precautions/

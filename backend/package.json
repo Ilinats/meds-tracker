@@ -7,10 +7,11 @@
     "dev": "ts-node-dev --respawn src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "jest --detectOpenHandles --forceExit",
+    "test": "jest",
+    "test:auth": "jest auth",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --detectOpenHandles --forceExit",
-    "test:verbose": "jest --verbose --detectOpenHandles --forceExit"
+    "test:coverage": "jest --coverage",
+    "test:db:push": "set DATABASE_URL=postgresql://postgres:Baza2024@localhost:5432/meds_tracker_test && prisma db push --schema=prisma/test/schema.prisma"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +39,7 @@
     "@types/node": "^22.14.1",
     "@types/node-schedule": "^2.1.5",
     "@types/supertest": "^6.0.3",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
     "jest": "^29.7.0",
     "supertest": "^7.1.0",
