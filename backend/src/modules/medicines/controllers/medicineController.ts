@@ -274,7 +274,7 @@ export const addToCollection = async (req: AuthRequest, res: Response) => {
       schedules 
     } = req.body;
 
-    const userId = req.user?.id; // Get the user ID from the decoded JWT
+    const userId = req.user?.id; 
 
     if (!userId) {
       res.status(401).json({ success: false, error: { message: 'User not authenticated' } });
