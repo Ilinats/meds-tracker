@@ -2,34 +2,22 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
   TextInput,
-  KeyboardAvoidingView,
-  Platform,
+  TouchableOpacity,
   ScrollView,
+  StyleSheet,
+  Modal,
+  KeyboardAvoidingView,
+  Alert,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMedications } from '../context/MedicationContext';
+import { medicineApi } from '../services/api';
 
-//TODO: kogato dobavqm novo lekarstvo, da ne me vrushta na ekrana sus starata na lekarstvoto, a na ekrana s lekarstvata
-//TODO: da raboti strelkata nazad
-
-// Mock data
-const EXISTING_MEDICATIONS = [
-  { id: 'med1', name: 'Acetaminophen (Tylenol)', category: 'Pain Reliever' },
-  { id: 'med2', name: 'Ibuprofen (Advil)', category: 'Anti-inflammatory' },
-  { id: 'med3', name: 'Aspirin', category: 'Pain Reliever' },
-  { id: 'med4', name: 'Loratadine (Claritin)', category: 'Antihistamine' },
-  { id: 'med5', name: 'Diphenhydramine (Benadryl)', category: 'Antihistamine' },
-  { id: 'med6', name: 'Omeprazole (Prilosec)', category: 'Acid Reducer' },
-  { id: 'med7', name: 'Simvastatin', category: 'Cholesterol' },
-  { id: 'med8', name: 'Lisinopril', category: 'Blood Pressure' },
-  { id: 'med9', name: 'Amoxicillin', category: 'Antibiotic' },
-  { id: 'med10', name: 'Metformin', category: 'Diabetes' },
-];
+const UNITS = ['PILLS', 'ML', 'MG', 'G', 'TABLET', 'CAPSULE', 'DROP', 'TEASPOON', 'TABLESPOON', 'PATCH'];
 
 const CATEGORIES = [
   'Pain Reliever',
@@ -46,90 +34,194 @@ const CATEGORIES = [
 ];
 
 const AddMedicationScreen = ({ navigation }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showCustomForm, setShowCustomForm] = useState(false);
   const [medicationName, setMedicationName] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [expirationDate, setExpirationDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [prescription, setPrescription] = useState('');
+  const [dosagePerDay, setDosagePerDay] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [customCategory, setCustomCategory] = useState('');
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showExpirationDatePicker, setShowExpirationDatePicker] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPresetId, setSelectedPresetId] = useState(null);
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
+  const [showCustomCategoryInput, setShowCustomCategoryInput] = useState(false);
+  const [expirationDate, setExpirationDate] = useState(new Date());
+  const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
+  const [schedule, setSchedule] = useState({
+    timesOfDay: ['Night'],
+    repeatDays: ['Tuesday', 'Thursday'],
+    dosageAmount: 1
+  });
+
+  const { 
+    data: presetData, 
+    isLoading: isLoadingPresets,
+    error: presetError
+  } = medicineApi.usePresetMedicines({ search: searchQuery });
 
   const { addMedication } = useMedications();
 
-  const resetFormAndGoBack = () => {
-    setMedicationName('');
-    setQuantity('');
-    setExpirationDate(new Date());
-    setSelectedCategory('');
-    setCustomCategory('');
-    setShowCustomForm(false);
-    
-    navigation.navigate('Medications');
+  const presetMedications = presetData?.medicines || [];
+
+  const handleStartDateChange = (event, selectedDate) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) setStartDate(selectedDate);
   };
 
-  const filteredMedications = EXISTING_MEDICATIONS.filter((med) =>
-    med.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleEndDateChange = (event, selectedDate) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) setEndDate(selectedDate);
+  };
 
-  const handleSelectExisting = (medication) => {
+  const handleExpirationDateChange = (event, selectedDate) => {
+    setShowExpirationDatePicker(false);
+    if (selectedDate) setExpirationDate(selectedDate);
+  };
+
+  const handlePresetMedicationSelect = (medication) => {
     setMedicationName(medication.name);
+    setQuantity(medication.quantity?.toString() || '');
     setSelectedCategory(medication.category);
+    setSelectedPresetId(medication.id);
     setShowCustomForm(true);
   };
 
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setExpirationDate(selectedDate);
+  const handleSaveMedication = async () => {
+    if (!medicationName || !quantity || !startDate || !endDate || !selectedCategory || !dosagePerDay) {
+      Alert.alert('Error', 'Please fill in all required fields.');
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      Alert.alert('Error', 'Start date cannot be after end date.');
+      return;
+    }
+
+    if (isNaN(dosagePerDay) || dosagePerDay <= 0) {
+      Alert.alert('Error', 'Dosage per day must be a positive number.');
+      return;
+    }
+
+    if (isNaN(quantity) || quantity <= 0) {
+      Alert.alert('Error', 'Quantity must be a positive number.');
+      return;
+    }
+
+    if (schedule.dosageAmount <= 0) {
+      Alert.alert('Error', 'Dosage amount must be a positive number.');
+      return;
+    }
+
+    if (schedule.timesOfDay.length === 0) {
+      Alert.alert('Error', 'Please select at least one time of day for the schedule.');
+      return;
+    }
+
+    if (schedule.repeatDays.length === 0) {
+      Alert.alert('Error', 'Please select at least one repeat day for the schedule.');
+      return;
+    }
+
+    try {
+      const medicationData = {
+        name: medicationName,
+        category: selectedCategory,
+        unit: "PILLS",
+        quantity: Number(quantity),
+        expiryDate: expirationDate.toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        dosagePerDay: Number(dosagePerDay),
+        prescription: prescription,
+        presetMedicineId: selectedPresetId,
+        schedules: [schedule]
+      };
+
+      const success = await addMedication(medicationData);
+      if (success) {
+        Alert.alert('Success', 'Medication added successfully!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'Failed to add medication. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error adding medication:', error);
+      Alert.alert('Error', 'An error occurred while adding the medication. Please try again.');
     }
   };
 
-  const handleSaveMedication = () => {
-    if (!medicationName || !quantity) {
-      alert('Please fill in all required fields');
-      return;
-    }
+  const renderPresetList = () => (
+    <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search medications..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
-    if (isNaN(quantity) || parseInt(quantity) <= 0) {
-      alert('Please enter a valid quantity.');
-      return;
-    }
+      {isLoadingPresets ? (
+        <ActivityIndicator size="large" color="#4299e1" style={styles.loader} />
+      ) : presetError ? (
+        <Text style={styles.errorText}>Error loading medications. Please try again.</Text>
+      ) : (
+        <FlatList
+          data={presetMedications}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.presetItem}
+              onPress={() => handlePresetMedicationSelect(item)}
+            >
+              <Text style={styles.presetName}>{item.name}</Text>
+              <Text style={styles.presetCategory}>{item.category}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#a0aec0" />
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No medications found. Try another search.</Text>
+          }
+        />
+      )}
 
-    if (selectedCategory === 'Other' && !customCategory.trim()) {
-      alert('Please provide a custom category.');
-      return;
-    }
+      <TouchableOpacity
+        style={styles.customButton}
+        onPress={() => setShowCustomForm(true)}
+      >
+        <Ionicons name="add-circle-outline" size={24} color="#4299e1" />
+        <Text style={styles.customButtonText}>Add Custom Medication</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-    const finalCategory = selectedCategory === 'Other' ? customCategory : selectedCategory;
-
-    if (expirationDate < new Date()) {
-      alert('Expiration date cannot be in the past.');
-        return;
-    }
-
-    const newMedication = {
-      id: Date.now().toString(),
-      name: medicationName,
-      quantity: parseInt(quantity),
-      expirationDate: expirationDate.toISOString(),
-      purpose: finalCategory || 'Not specified',
-      addedDate: new Date().toISOString(),
-    };
-
-    addMedication(newMedication);
-    resetFormAndGoBack();
-  };
-
-  const renderCustomForm = () => (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ flex: 1 }}
-    >
-      <ScrollView style={styles.formContainer}>
-        <Text style={styles.formTitle}>Add New Medication</Text>
-
+  const renderForm = () => (
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => {
+            setShowCustomForm(false);
+            setMedicationName('');
+            setQuantity('');
+            setSelectedCategory('');
+            setSelectedPresetId(null);
+          }}
+        >
+          <Ionicons name="arrow-back" size={28} color="#4a5568" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Add Medication</Text>
+      </View>
+      <ScrollView 
+        style={styles.formContainer}
+        contentContainerStyle={styles.formContentContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.label}>Medication Name*</Text>
         <TextInput
           style={styles.input}
@@ -143,29 +235,62 @@ const AddMedicationScreen = ({ navigation }) => {
           style={styles.input}
           value={quantity}
           onChangeText={setQuantity}
-          placeholder="How many pills/tablets/etc."
+          placeholder="Enter quantity"
           keyboardType="numeric"
         />
 
-        <Text style={styles.label}>Expiration Date</Text>
+        <Text style={styles.label}>Start Date*</Text>
         <TouchableOpacity
           style={styles.datePickerButton}
-          onPress={() => setShowDatePicker(true)}
+          onPress={() => setShowStartDatePicker(true)}
         >
-          <Text>{expirationDate.toLocaleDateString()}</Text>
-          <Ionicons name="calendar-outline" size={20} color="#4a5568" />
+          <Text>{startDate.toLocaleDateString()}</Text>
         </TouchableOpacity>
 
-        {showDatePicker && (
+        {showStartDatePicker && (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display="default"
+            onChange={handleStartDateChange}
+          />
+        )}
+
+        <Text style={styles.label}>End Date*</Text>
+        <TouchableOpacity
+          style={styles.datePickerButton}
+          onPress={() => setShowEndDatePicker(true)}
+        >
+          <Text>{endDate.toLocaleDateString()}</Text>
+        </TouchableOpacity>
+
+        {showEndDatePicker && (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display="default"
+            onChange={handleEndDateChange}
+          />
+        )}
+
+        <Text style={styles.label}>Expiry Date*</Text>
+        <TouchableOpacity
+          style={styles.datePickerButton}
+          onPress={() => setShowExpirationDatePicker(true)}
+        >
+          <Text>{expirationDate.toLocaleDateString()}</Text>
+        </TouchableOpacity>
+
+        {showExpirationDatePicker && (
           <DateTimePicker
             value={expirationDate}
             mode="date"
             display="default"
-            onChange={handleDateChange}
+            onChange={handleExpirationDateChange}
           />
         )}
 
-        <Text style={styles.label}>Purpose/Category</Text>
+        <Text style={styles.label}>Category*</Text>
         <TouchableOpacity
           style={styles.input}
           onPress={() => setShowCategoryPicker(!showCategoryPicker)}
@@ -192,215 +317,231 @@ const AddMedicationScreen = ({ navigation }) => {
           </View>
         )}
 
-        {selectedCategory === 'Other' && (
-          <>
-            <Text style={styles.label}>Custom Category</Text>
-            <TextInput
-              style={styles.input}
-              value={customCategory}
-              onChangeText={setCustomCategory}
-              placeholder="Enter custom category"
-            />
-          </>
-        )}
+        <Text style={styles.label}>Prescription (Optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={prescription}
+          onChangeText={setPrescription}
+          placeholder="Optional: Add prescription details"
+        />
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.cancelButton} onPress={resetFormAndGoBack}>
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+        <Text style={styles.label}>Dosage per Day*</Text>
+        <TextInput
+          style={styles.input}
+          value={String(dosagePerDay)}
+          onChangeText={(text) => setDosagePerDay(Number(text))}
+          placeholder="How many times per day?"
+          keyboardType="numeric"
+        />
 
-          <TouchableOpacity style={styles.saveButton} onPress={handleSaveMedication}>
-            <Text style={styles.saveButtonText}>Save Medication</Text>
+        <Text style={styles.label}>Schedule</Text>
+        <View style={styles.scheduleContainer}>
+          <Text style={styles.scheduleText}>Times of Day: {schedule.timesOfDay.join(', ')}</Text>
+          <Text style={styles.scheduleText}>Repeat Days: {schedule.repeatDays.join(', ')}</Text>
+          <Text style={styles.scheduleText}>Dosage Amount: {schedule.dosageAmount}</Text>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => setIsScheduleModalVisible(true)}
+          >
+            <Text style={styles.buttonText}>Edit</Text>
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveMedication}
+        >
+          <Text style={styles.saveButtonText}>Save Medication</Text>
+        </TouchableOpacity>
       </ScrollView>
+
+      <Modal
+        visible={isScheduleModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsScheduleModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Edit Schedule</Text>
+
+            <Text style={styles.modalLabel}>Times of Day (comma separated)</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={schedule.timesOfDay.join(', ')}
+              onChangeText={(text) => setSchedule(prev => ({ ...prev, timesOfDay: text.split(',').map(item => item.trim()) }))}
+              placeholder="e.g., Morning, Night"
+            />
+
+            <Text style={styles.modalLabel}>Repeat Days (comma separated)</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={schedule.repeatDays.join(', ')}
+              onChangeText={(text) => setSchedule(prev => ({ ...prev, repeatDays: text.split(',').map(item => item.trim()) }))}
+              placeholder="e.g., Monday, Wednesday"
+            />
+
+            <Text style={styles.modalLabel}>Dosage Amount</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={String(schedule.dosageAmount)}
+              onChangeText={(text) => setSchedule(prev => ({ ...prev, dosageAmount: Number(text) }))}
+              placeholder="e.g., 1"
+              keyboardType="numeric"
+            />
+
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity 
+                style={styles.modalButton} 
+                onPress={() => setIsScheduleModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]} 
+                onPress={() => setIsScheduleModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 
-  const renderMedicationSelector = () => (
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#718096" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search medications..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
-
-      <FlatList
-        data={filteredMedications}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.medicationItem} onPress={() => handleSelectExisting(item)}>
-            <View>
-              <Text style={styles.medicationName}>{item.name}</Text>
-              <Text style={styles.medicationCategory}>{item.category}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#a0aec0" />
-          </TouchableOpacity>
-        )}
-        ListFooterComponent={
-          <TouchableOpacity
-            style={styles.customMedicationButton}
-            onPress={() => setShowCustomForm(true)}
-          >
-            <Ionicons name="add-circle-outline" size={24} color="#4299e1" />
-            <Text style={styles.customMedicationText}>Add Custom Medication</Text>
-          </TouchableOpacity>
-        }
-      />
-    </View>
-  );
-
-  return (
-    <View style={styles.mainContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={resetFormAndGoBack}>
-            <Ionicons name="arrow-back" size={24} color="#4a5568" />
-        </TouchableOpacity>
-        <View style={styles.header}>
-            <TouchableOpacity style={styles.backButton} onPress={resetFormAndGoBack}>
-            <Ionicons name="arrow-back" size={24} color="#4a5568" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>
-            {showCustomForm ? 'Add Medication' : 'Select Medication'}
-            </Text>
-        </View>
-
-        {showCustomForm ? renderCustomForm() : renderMedicationSelector()}
-    </View>
-  );
+  return showCustomForm ? renderForm() : renderPresetList();
 };
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
   container: {
     flex: 1,
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  backButton: {
-    marginRight: 15,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2d3748',
+    backgroundColor: '#f8f9fa',
+    padding: 16,
   },
   searchContainer: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  searchIcon: {
-    marginRight: 10,
+    marginBottom: 16,
   },
   searchInput: {
-    flex: 1,
+    height: 60,
     fontSize: 16,
-  },
-  medicationItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginTop: 30,
     backgroundColor: 'white',
-    padding: 15,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: '#4299e1',
+  },
+  presetItem: {
+    backgroundColor: 'white',
+    padding: 16,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  medicationName: {
+  presetName: {
     fontSize: 16,
     fontWeight: '500',
     color: '#2d3748',
   },
-  medicationCategory: {
+  presetCategory: {
     fontSize: 14,
     color: '#718096',
-    marginTop: 4,
   },
-  customMedicationButton: {
+  customButton: {
     flexDirection: 'row',
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 8,
-    marginVertical: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 8,
+    marginTop: 16,
     borderWidth: 1,
     borderColor: '#4299e1',
     borderStyle: 'dashed',
   },
-  customMedicationText: {
-    marginLeft: 10,
+  customButtonText: {
+    marginLeft: 8,
     fontSize: 16,
     fontWeight: '500',
     color: '#4299e1',
   },
-  formContainer: {
-    flex: 1,
-    padding: 20,
+  loader: {
+    marginTop: 20,
   },
-  formTitle: {
-    fontSize: 22,
+  errorText: {
+    textAlign: 'center',
+    color: '#e53e3e',
+    marginTop: 20,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#718096',
+    marginTop: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingVertical: 16,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    paddingHorizontal: 16,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  headerTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#2d3748',
-    marginBottom: 20,
+    marginLeft: 8,
+  },
+  formContainer: {
+    flex: 1,
+  },
+  formContentContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 40,
   },
   label: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#2d3748',
-    marginTop: 10,
-    marginBottom: 5,
+    marginBottom: 8,
   },
   input: {
     backgroundColor: 'white',
-    padding: 10,
+    padding: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   datePickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: 'white',
-    padding: 10,
+    padding: 12,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   categoryPicker: {
     backgroundColor: 'white',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    marginTop: 5,
-    marginBottom: 10,
+    marginBottom: 16,
   },
   categoryOption: {
-    padding: 10,
+    padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
@@ -408,30 +549,91 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2d3748',
   },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
+  scheduleContainer: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 16,
   },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#e53e3e',
+  scheduleText: {
+    fontSize: 14,
+    color: '#4a5568',
+    marginBottom: 8,
+  },
+  editButton: {
+    backgroundColor: '#4299e1',
     padding: 12,
     borderRadius: 8,
-    marginRight: 10,
+    alignItems: 'center',
+    marginTop: 8,
   },
-  cancelButtonText: {
+  buttonText: {
     color: 'white',
-    textAlign: 'center',
     fontWeight: 'bold',
   },
   saveButton: {
-    flex: 1,
-    backgroundColor: '#38a169',
-    padding: 12,
+    backgroundColor: '#4299e1',
+    padding: 16,
     borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 24,
   },
   saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 8,
+    width: '90%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2d3748',
+    marginBottom: 16,
+  },
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#2d3748',
+    marginBottom: 8,
+  },
+  modalInput: {
+    backgroundColor: 'white',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 16,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+  modalButton: {
+    backgroundColor: '#4299e1',
+    padding: 12,
+    borderRadius: 8,
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  cancelButton: {
+    backgroundColor: '#e53e3e',
+  },
+  modalButtonText: {
     color: 'white',
     textAlign: 'center',
     fontWeight: 'bold',

@@ -1,74 +1,110 @@
-import React, { createContext, useState, useContext } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { medicineApi } from '../services/api';
 
-const MedicationContext = createContext();
+const MedicationContext = createContext(null);
 
 export const useMedications = () => useContext(MedicationContext);
 
 export const MedicationProvider = ({ children }) => {
-  const [medications, setMedications] = useState([]);
+  const queryClient = useQueryClient();
 
-  const loadMedications = async () => {
+  const {
+    data: medications = [],
+    isLoading: isMedicationsLoading,
+    refetch: loadMedications,
+  } = medicineApi.useUserMedicines();
+
+  const addMedicationMutation = medicineApi.useAddMedicine();
+  const updateMedicationMutation = medicineApi.useUpdateMedicine();
+  const removeMedicationMutation = medicineApi.useRemoveMedicine();
+  const recordIntakeMutation = medicineApi.useRecordIntake();
+
+  const { data: expiringMedicines = [] } = medicineApi.useExpiringMedicines();
+  const { data: lowStockMedicines = [] } = medicineApi.useLowStockMedicines();
+
+  const addMedication = async (medicationData) => {
     try {
-      const token = await AsyncStorage.getItem('token');
-  
-      const response = await fetch('http://<your-server>/api/medications', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const mappedData = {
+        name: medicationData.name,
+        category: medicationData.category || 'Other',
+        unit: medicationData.unit || 'PILLS',
+        quantity: medicationData.quantity || 0,
+        expiryDate: medicationData.expiryDate || new Date(),
+        startDate: medicationData.startDate || null,
+        endDate: medicationData.endDate || null,
+        dosagePerDay: medicationData.dosagePerDay || 1,
+        prescription: medicationData.prescription || null,
+        presetMedicineId: medicationData.presetMedicineId || null,
+        schedules: medicationData.schedules || []
+      };
+
+      await addMedicationMutation.mutateAsync(mappedData);
+      return true;
+    } catch (error) {
+      console.error('Error adding medication:', error);
+      return false;
+    }
+  };
+
+  const updateMedication = async (id, medicationData) => {
+    try {
+      const mappedData = {
+        name: medicationData.name,
+        category: medicationData.category || 'Other',
+        unit: medicationData.unit || 'PILLS',
+        quantity: medicationData.quantity || 0,
+        expiryDate: medicationData.expiryDate || new Date(),
+        startDate: medicationData.startDate || null,
+        endDate: medicationData.endDate || null,
+        dosagePerDay: medicationData.dosagePerDay || 1,
+        prescription: medicationData.prescription || null,
+        schedules: medicationData.schedules || []
+      };
+
+      await updateMedicationMutation.mutateAsync({ id, data: mappedData });
+      return true;
+    } catch (error) {
+      console.error('Error updating medication:', error);
+      return false;
+    }
+  };
+
+  const deleteMedication = async (id) => {
+    try {
+      await removeMedicationMutation.mutateAsync(id);
+      return true;
+    } catch (error) {
+      console.error('Error deleting medication:', error);
+      return false;
+    }
+  };
+
+  const recordMedicineIntake = async (scheduleId, takenAt = new Date()) => {
+    try {
+      await recordIntakeMutation.mutateAsync({
+        scheduleId,
+        data: { takenAt }
       });
-  
-      const json = await response.json();
-  
-      if (json.success) {
-        setMedications(json.data); // assuming setMedications updates context state
-      } else {
-        console.log(json.error.message);
-      }
+      return true;
     } catch (error) {
-      console.log('Failed to load medications:', error);
+      console.error('Error recording intake:', error);
+      return false;
     }
-  };
-  
-
-  // Save medications to storage
-  const saveMedications = async (updatedMedications) => {
-    try {
-      await AsyncStorage.setItem('medications', JSON.stringify(updatedMedications));
-      setMedications(updatedMedications);
-    } catch (error) {
-      console.error('Error saving medications:', error);
-    }
-  };
-
-  // Add a new medication
-  const addMedication = (medication) => {
-    const updatedMedications = [...medications, medication];
-    saveMedications(updatedMedications);
-  };
-
-  // Delete a medication
-  const deleteMedication = (medicationId) => {
-    const updatedMedications = medications.filter(med => med.id !== medicationId);
-    saveMedications(updatedMedications);
-  };
-
-  // Update an existing medication
-  const updateMedication = (updatedMedication) => {
-    const updatedMedications = medications.map(med => 
-      med.id === updatedMedication.id ? updatedMedication : med
-    );
-    saveMedications(updatedMedications);
   };
 
   return (
-    <MedicationContext.Provider 
-      value={{ 
-        medications, 
+    <MedicationContext.Provider
+      value={{
+        medications,
+        isMedicationsLoading,
         loadMedications,
         addMedication,
+        updateMedication,
         deleteMedication,
-        updateMedication
+        recordMedicineIntake,
+        expiringMedicines,
+        lowStockMedicines
       }}
     >
       {children}

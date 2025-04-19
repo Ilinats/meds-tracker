@@ -3,136 +3,134 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const MedicationCard = ({ medication, onPress }) => {
-  // Helper function to check if a medication is expiring soon
-  const isExpiringSoon = () => {
+  // Calculate days until expiry
+  const daysUntilExpiry = () => {
     const today = new Date();
-    const expDate = new Date(medication.expirationDate);
-    
-    // Calculate difference in days
-    const diffTime = expDate - today;
+    const expiryDate = new Date(medication.expiryDate);
+    const diffTime = Math.abs(expiryDate - today);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Function to get appropriate schedule display
+  const getScheduleDisplay = () => {
+    if (!medication.schedules || medication.schedules.length === 0) {
+      return 'No schedule set';
+    }
+
+    // Get the first schedule for display
+    const schedule = medication.schedules[0];
     
-    return diffDays <= 30 && diffDays > 0;
-  };
-  
-  // Format expiration date
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
-  
-  // Determine badge color based on purpose
-  const getBadgeColor = (purpose) => {
-    const purposeColors = {
-      'Pain Reliever': '#4299e1', // blue
-      'Anti-inflammatory': '#9f7aea', // purple
-      'Antihistamine': '#48bb78', // green
-      'Acid Reducer': '#ed8936', // orange
-      'Cholesterol': '#ecc94b', // yellow
-      'Blood Pressure': '#f56565', // red
-      'Antibiotic': '#38b2ac', // teal
-      'Diabetes': '#667eea', // indigo
-      'Sleep Aid': '#9f7aea', // purple
-      'Vitamin/Supplement': '#4fd1c5', // teal
-    };
+    // Format days
+    const days = schedule.repeatDays.join(', ');
     
-    return purposeColors[purpose] || '#a0aec0'; // default gray
+    // Format times
+    const times = schedule.timesOfDay.map(time => {
+      // Convert 24hr format to 12hr if needed
+      const [hour, minute] = time.split(':');
+      return `${hour}:${minute}`;
+    }).join(', ');
+
+    return `${days} at ${times}`;
   };
-  
+
+  // Get unit display
+  const getUnitDisplay = () => {
+    switch (medication.unit) {
+      case 'PILLS':
+        return 'pills';
+      case 'ML':
+        return 'ml';
+      case 'MG':
+        return 'mg';
+      case 'G':
+        return 'g';
+      default:
+        return medication.unit.toLowerCase();
+    }
+  };
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={styles.leftSection}>
-        <View style={[styles.medicationIcon, { backgroundColor: getBadgeColor(medication.purpose) }]}>
-          <Ionicons name="medical" size={20} color="white" />
+    <TouchableOpacity style={styles.card} onPress={onPress}>
+      <View style={styles.header}>
+        <Text style={styles.name}>{medication.name}</Text>
+        <View style={styles.quantityContainer}>
+          <Text style={styles.quantity}>
+            {medication.quantity} {getUnitDisplay()}
+          </Text>
         </View>
       </View>
       
-      <View style={styles.middleSection}>
-        <Text style={styles.medicationName}>{medication.name}</Text>
-        <Text style={styles.purpose}>{medication.purpose}</Text>
-        <View style={styles.medicationDetails}>
-          <Text style={styles.detailText}>Qty: {medication.quantity}</Text>
-          <Text style={styles.expiryDate}>Expires: {formatDate(medication.expirationDate)}</Text>
-        </View>
+      <View style={styles.infoRow}>
+        <Ionicons name="medical" size={16} color="#4299e1" />
+        <Text style={styles.infoText}>{medication.category}</Text>
       </View>
       
-      <View style={styles.rightSection}>
-        {isExpiringSoon() && (
-          <View style={styles.expiryWarning}>
-            <Ionicons name="alert-circle" size={14} color="#dd6b20" />
-            <Text style={styles.expiryWarningText}>Expiring soon</Text>
-          </View>
-        )}
-        <Ionicons name="chevron-forward" size={20} color="#a0aec0" />
+      <View style={styles.infoRow}>
+        <Ionicons name="time-outline" size={16} color="#4299e1" />
+        <Text style={styles.infoText}>{getScheduleDisplay()}</Text>
+      </View>
+      
+      <View style={styles.infoRow}>
+        <Ionicons name="calendar-outline" size={16} color="#4299e1" />
+        <Text style={styles.expiryText}>
+          Expires in {daysUntilExpiry()} days
+        </Text>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
+  card: {
     backgroundColor: 'white',
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
   },
-  leftSection: {
-    marginRight: 15,
-  },
-  medicationIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  middleSection: {
-    flex: 1,
-  },
-  medicationName: {
-    fontSize: 16,
+  name: {
+    fontSize: 18,
     fontWeight: '600',
     color: '#2d3748',
-    marginBottom: 2,
+    flex: 1,
   },
-  purpose: {
+  quantityContainer: {
+    backgroundColor: '#ebf4ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  quantity: {
+    color: '#4299e1',
+    fontWeight: '500',
     fontSize: 14,
-    color: '#718096',
-    marginBottom: 5,
   },
-  medicationDetails: {
-    flexDirection: 'row',
-  },
-  detailText: {
-    fontSize: 12,
-    color: '#718096',
-    marginRight: 12,
-  },
-  expiryDate: {
-    fontSize: 12,
-    color: '#718096',
-  },
-  rightSection: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  expiryWarning: {
+  infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 5,
-    paddingHorizontal: 8,
-    backgroundColor: '#FEEBC8',
-    borderRadius: 12,
-    marginBottom: 5,
+    marginBottom: 8,
   },
-  expiryWarningText: {
-    fontSize: 10,
-    color: '#dd6b20',
-    marginLeft: 3,
+  infoText: {
+    marginLeft: 8,
+    color: '#4a5568',
+    fontSize: 14,
+  },
+  expiryText: {
+    marginLeft: 8,
+    color: '#ed8936', // Orange color for expiry
+    fontSize: 14,
   },
 });
 

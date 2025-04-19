@@ -1,3 +1,5 @@
+// app/_layout.js
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -11,20 +13,20 @@ import { MedicationProvider } from '../context/MedicationContext';
 
 SplashScreen.preventAutoHideAsync();
 
+const queryClient = new QueryClient();
+
 export default function Layout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const userToken = await AsyncStorage.getItem('userToken');
-        setIsLoggedIn(userToken !== null);
+        await AsyncStorage.getItem('userToken');
       } catch (error) {
         console.error('Error checking login status:', error);
       } finally {
@@ -36,28 +38,28 @@ export default function Layout() {
   }, []);
 
   useEffect(() => {
-    if (loaded && !isLoading) SplashScreen.hideAsync();
+    const hideSplash = async () => {
+      if (loaded && !isLoading) {
+        await SplashScreen.hideAsync();
+      }
+    };
+    hideSplash();
   }, [loaded, isLoading]);
 
-  if (!loaded || isLoading) return null;
+  if (!loaded || isLoading) {
+    return null;
+  }
 
   return (
-    <UserProvider>
-      <MedicationProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            {isLoggedIn ? (
-              <Stack.Screen name="(main)/index" />
-            ) : (
-              <Stack.Screen
-                name="login"
-                initialParams={{ setIsLoggedIn }}
-              />
-            )}
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </MedicationProvider>
-    </UserProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserProvider>
+        <MedicationProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack screenOptions={{ headerShown: false }} />
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </MedicationProvider>
+      </UserProvider>
+    </QueryClientProvider>
   );
 }

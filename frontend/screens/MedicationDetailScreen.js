@@ -4,23 +4,90 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  ScrollView 
+  ScrollView,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useMedications } from '../context/MedicationContext';
-
-//TODO: Edit button da raboti
+import { useQuery } from '@tanstack/react-query';
+import { medicineApi } from '../services/api';
 
 const MedicationDetailScreen = ({ route, navigation }) => {
   const { medicationId } = route.params;
-  const { medications, deleteMedication } = useMedications();
+  const { deleteMedication, medications } = useMedications();
   
-  const medication = medications.find(med => med.id === medicationId);
+  // First check if we already have this medication in our context
+  // Find the medication in the context's medications array
+  const contextMedication = medications?.find(med => med.id === medicationId);
   
-  if (!medication) {
+  // Use a specific query for this medication to get fresh data
+  // Note: getMedicineDetails doesn't exist in the api.js you provided, so we'll 
+  // need to adapt to use what's available
+  const { 
+    data: medicationDetail, 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ['medication', medicationId],
+    // Use the proper endpoint based on the API implementation
+    queryFn: async () => {
+      // Since there's no direct getMedicineDetails function in the provided API,
+      // we can use the existing data from context as a fallback
+      if (contextMedication) {
+        return contextMedication;
+      }
+      
+      // If you need to fetch fresh data, you would implement this
+      // For now, throw an error if not in context since API doesn't have this endpoint
+      throw new Error("Medication details not available");
+    },
+    // Initialize with context data to avoid loading state if already available
+    initialData: contextMedication
+  });
+  
+  // Use the medication data from either source
+  const medication = medicationDetail || contextMedication;
+  
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Medication",
+      "Are you sure you want to delete this medication?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: async () => {
+          const success = await deleteMedication(medicationId);
+          if (success) {
+            navigation.goBack();
+          } else {
+            Alert.alert("Error", "Failed to delete medication. Please try again.");
+          }
+        }},
+      ]
+    );
+  };
+  
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+  
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4299e1" />
+        <Text style={styles.loadingText}>Loading medication details...</Text>
+      </View>
+    );
+  }
+  
+  if (error || !medication) {
     return (
       <View style={styles.notFoundContainer}>
-        <Text style={styles.notFoundText}>Medication not found</Text>
+        <Text style={styles.notFoundText}>
+          {error ? `Error loading medication: ${error.message}` : 'Medication not found'}
+        </Text>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -30,16 +97,6 @@ const MedicationDetailScreen = ({ route, navigation }) => {
       </View>
     );
   }
-  
-  const handleDelete = () => {
-    deleteMedication(medicationId);
-    navigation.goBack();
-  };
-  
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
-  };
   
   return (
     <View style={styles.container}>
@@ -64,29 +121,36 @@ const MedicationDetailScreen = ({ route, navigation }) => {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Quantity:</Text>
-            <Text style={styles.infoValue}>{medication.quantity}</Text>
+            <Text style={styles.infoValue}>
+              {medication.quantity} {medication.unit?.toLowerCase() || 'pills'}
+            </Text>
           </View>
           
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Purpose:</Text>
-            <Text style={styles.infoValue}>{medication.purpose}</Text>
+            <Text style={styles.infoLabel}>Category:</Text>
+            <Text style={styles.infoValue}>{medication.category}</Text>
           </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Expiration Date:</Text>
-            <Text style={styles.infoValue}>{formatDate(medication.expirationDate)}</Text>
+            <Text style={styles.infoValue}>
+              {formatDate(medication.expiryDate || medication.expirationDate)}
+            </Text>
           </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Added On:</Text>
-            <Text style={styles.infoValue}>{formatDate(medication.addedDate)}</Text>
+            <Text style={styles.infoValue}>{formatDate(medication.createdAt)}</Text>
           </View>
         </View>
         
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity 
             style={styles.editButton}
-            onPress={() => navigation.navigate('EditMedication', { medicationId })}
+            onPress={() => navigation.navigate('EditMedication', { 
+              medicationId,
+              medication // Pass the medication data to the edit screen
+            })}
           >
             <Ionicons name="pencil" size={20} color="white" />
             <Text style={styles.buttonText}>Edit</Text>
@@ -103,7 +167,7 @@ const MedicationDetailScreen = ({ route, navigation }) => {
         
         <View style={styles.infoCard}>
           <Text style={styles.sectionTitle}>Expiration Information</Text>
-          {isExpiringSoon(medication.expirationDate) ? (
+          {isExpiringSoon(medication.expiryDate || medication.expirationDate) ? (
             <View style={styles.expiryWarning}>
               <Ionicons name="warning" size={20} color="#dd6b20" />
               <Text style={styles.expiryWarningText}>
@@ -117,6 +181,40 @@ const MedicationDetailScreen = ({ route, navigation }) => {
             pharmacist about specific storage requirements.
           </Text>
         </View>
+
+        {medication.schedules && medication.schedules.length > 0 && (
+          <View style={styles.infoCard}>
+            <Text style={styles.sectionTitle}>Dosage Schedule</Text>
+            {medication.schedules.map((schedule, index) => (
+              <View key={schedule.id || index} style={styles.scheduleItem}>
+                <Text style={styles.scheduleTimesTitle}>Times per day:</Text>
+                <View style={styles.timesContainer}>
+                  {schedule.timesOfDay.map((time, timeIndex) => (
+                    <Text key={timeIndex} style={styles.timeChip}>{time}</Text>
+                  ))}
+                </View>
+                <Text style={styles.scheduleDosage}>
+                  Dosage: {schedule.dosageAmount} {medication.unit?.toLowerCase() || 'pill'}(s)
+                </Text>
+                
+                <Text style={styles.scheduleDaysTitle}>Days:</Text>
+                <View style={styles.daysContainer}>
+                  {schedule.repeatDays.map((day, dayIndex) => (
+                    <Text key={dayIndex} style={styles.dayChip}>{formatDay(day)}</Text>
+                  ))}
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.takeButton}
+                  onPress={() => handleTakeMedication(schedule.id)}
+                >
+                  <Ionicons name="checkmark-circle" size={16} color="white" />
+                  <Text style={styles.takeButtonText}>Log Intake</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -124,11 +222,26 @@ const MedicationDetailScreen = ({ route, navigation }) => {
 
 // Helper function to check if medication is expiring soon
 const isExpiringSoon = (dateString) => {
+  if (!dateString) return false;
   const expDate = new Date(dateString);
   const today = new Date();
   const diffTime = expDate - today;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays <= 30 && diffDays > 0;
+};
+
+// Helper function to format day abbreviations
+const formatDay = (day) => {
+  const days = {
+    'MON': 'Monday',
+    'TUE': 'Tuesday',
+    'WED': 'Wednesday',
+    'THU': 'Thursday',
+    'FRI': 'Friday',
+    'SAT': 'Saturday',
+    'SUN': 'Sunday'
+  };
+  return days[day] || day;
 };
 
 const styles = StyleSheet.create({
@@ -272,6 +385,85 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#4a5568',
+  },
+  scheduleItem: {
+    backgroundColor: '#f7fafc',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  scheduleTimesTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#4a5568',
+    marginBottom: 5,
+  },
+  scheduleDaysTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#4a5568',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  timesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+  },
+  daysContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 15,
+  },
+  timeChip: {
+    backgroundColor: '#ebf8ff',
+    color: '#3182ce',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    marginRight: 5,
+    marginBottom: 5,
+    fontSize: 12,
+  },
+  dayChip: {
+    backgroundColor: '#e9f5f2',
+    color: '#38a169',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    marginRight: 5,
+    marginBottom: 5,
+    fontSize: 12,
+  },
+  scheduleDosage: {
+    fontSize: 14,
+    color: '#4a5568',
+    fontWeight: '500',
+  },
+  takeButton: {
+    backgroundColor: '#38a169',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 5,
+  },
+  takeButtonText: {
+    color: 'white',
+    marginLeft: 5,
+    fontSize: 14,
+    fontWeight: '500',
+  }
 });
 
 export default MedicationDetailScreen;

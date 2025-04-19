@@ -1,2 +1,5 @@
 import MainNavigator from '../../navigation/MainNavigator';
-export default MainNavigator;
+
+export default function App() {
+  return <MainNavigator />;
+}

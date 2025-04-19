@@ -1,49 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Image, 
+  KeyboardAvoidingView, Platform, TouchableWithoutFeedback, 
+  Keyboard, ActivityIndicator 
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../context/UserContext';
+import { useRouter } from 'expo-router';
 
-const LoginScreen = ({ navigation, route }) => {
-    const username = route?.params?.username ?? false;
-  const { setIsLoggedIn } = username;
-  const [email, setEmail] = useState('');
+
+//TODO: dobavi da ima ochence da moje da si vidi parolata
+
+const LoginScreen = () => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { setUser } = useUser();
+  const { login, isLoading, isLoggedIn } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      router.replace('/(main)/index');
+    }
+  }, [isLoggedIn]);
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    setError('');
+    if (!username || !password) {
       setError('Please fill in all fields');
       return;
     }
 
     try {
-      // For demo, we just simulate a login
-      // In a real app, this would call an authentication API
-      await AsyncStorage.setItem('userToken', 'demo-token');
-      
-      // Set user data
-      const userData = {
-        id: '1',
-        name: 'Demo User',
-        email: email,
-      };
-      
-      setUser(userData);
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
-      
-      setIsLoggedIn(true);
+      const success = await login(username, password);
+      if (!success) {
+        setError('Invalid username or password');
+      }
     } catch (error) {
       setError('Login failed. Please try again.');
       console.log('Login error:', error);
@@ -57,23 +48,22 @@ const LoginScreen = ({ navigation, route }) => {
         style={styles.container}
       >
         <View style={styles.innerContainer}>
-          <Image 
-            source={{ uri: '/api/placeholder/100/100' }} 
+          {/* <Image 
+            source={require('../assets/icon.png')}
             style={styles.logo}
-          />
+          /> */}
           <Text style={styles.title}>MedTracker</Text>
-          
+
           <View style={styles.formContainer}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Username</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
+              placeholder="Enter your username"
+              value={username}
+              onChangeText={setUsername}
               autoCapitalize="none"
             />
-            
+
             <Text style={styles.label}>Password</Text>
             <TextInput
               style={styles.input}
@@ -82,13 +72,21 @@ const LoginScreen = ({ navigation, route }) => {
               onChangeText={setPassword}
               secureTextEntry
             />
-            
+
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Log In</Text>
+
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.buttonText}>Log In</Text>
+              )}
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.forgotPassword}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
