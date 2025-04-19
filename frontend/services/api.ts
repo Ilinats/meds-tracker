@@ -146,13 +146,32 @@ export const medicineApi = {
   },
 
   getUserMedicines: async (params?: QueryParams) => {
-    const response = await apiClient.get('/collection', { params });
-    return response.data.data;
+    try
+    {
+      const response = await apiClient.get('/medicines/collection', { params });
+      return response.data.data;
+    }
+    catch (error) {
+        console.error('Error fetching user medicines:', error);
+        if (error.response) {
+            // Server responded with a status other than 2xx
+            console.error('Error response:', error.response);
+            throw error.response.data;
+        } else if (error.request) {
+            // No response was received
+            console.error('Error request:', error.request);
+            throw 'No response from server';
+        } else {
+            // General error (network error, etc.)
+            console.error('Error message:', error.message);
+            throw error.message;
+        }
+        }
   },
 
   addToCollection: async (medicineData: MedicineData) => {
     try {
-      const response = await apiClient.post('/collection', medicineData);
+      const response = await apiClient.post('/medicines/collection', medicineData);
       return response.data;
     } catch (error) {
       console.error('Error adding medicine to collection:', error);

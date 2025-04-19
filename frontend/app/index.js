@@ -8,7 +8,7 @@ export default function Index() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = await AsyncStorage.getItem('userToken');
+        const token = await AsyncStorage.getItem('userToken'); 
       console.log('Token:', token); // Debugging line
       setRedirectPath(token ? '/(main)' : '/login');
     };

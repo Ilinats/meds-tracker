@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -8,21 +8,15 @@ import {
   ActivityIndicator 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useMedications } from '../context/MedicationContext';
+import { medicineApi } from '../services/api.ts';
 import MedicationCard from '../components/MedicationCard';
 
 const MedicationListScreen = ({ navigation }) => {
-  const { 
-    medications, 
-    isMedicationsLoading, 
-    loadMedications 
-  } = useMedications();
+  const [medications, setMedications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load medications when screen is focused
   useEffect(() => {
-    // Initial load
-    loadMedications();
-    
-    // Refresh medications when the screen is focused
     const unsubscribe = navigation.addListener('focus', () => {
       loadMedications();
     });
@@ -30,8 +24,22 @@ const MedicationListScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
+  // Fetch medications
+  const loadMedications = async () => {
+    try {
+      setIsLoading(true);
+      const data = await medicineApi.getUserMedicines();
+      console.log('Fetched medications:', data);
+      setMedications(data);
+    } catch (error) {
+      console.error('Error loading medications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const renderEmptyList = () => {
-    if (isMedicationsLoading) {
+    if (isLoading) {
       return (
         <View style={styles.emptyContainer}>
           <ActivityIndicator size="large" color="#4299e1" />
@@ -77,7 +85,7 @@ const MedicationListScreen = ({ navigation }) => {
         )}
         contentContainerStyle={medications?.length === 0 ? { flex: 1 } : { paddingBottom: 100 }}
         ListEmptyComponent={renderEmptyList}
-        refreshing={isMedicationsLoading}
+        refreshing={isLoading}
         onRefresh={loadMedications}
       />
       
