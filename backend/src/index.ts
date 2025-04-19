@@ -44,6 +44,8 @@ import cors from 'cors';
 import { AuthModule } from './modules/auth';
 import { MedicinesModule } from './modules/medicines';
 import { SchedulerModule } from './modules/scheduler';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 const app = express();
 
@@ -60,6 +62,36 @@ SchedulerModule.initialize();
 app.use('/api/auth', AuthModule.routes);
 app.use('/api/medicines', MedicinesModule.routes);
 app.use('/api/scheduler', SchedulerModule.routes);
+
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+
+    res.status(200).json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      checks: {
+        database: 'connected',
+        api: 'running'
+      }
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    
+    const message = error instanceof Error ? error.message : 'Unknown error';
+  
+    res.status(500).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      checks: {
+        database: 'disconnected',
+        api: 'running'
+      },
+      error: message
+    });
+  }
+});
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

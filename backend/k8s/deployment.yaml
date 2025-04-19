@@ -13,9 +13,15 @@ spec:
       labels:
         app: meds-tracker-api
     spec:
+      imagePullSecrets:
+      - name: regcred 
       containers:
       - name: meds-tracker-api
-        image: registry.digitalocean.com/meds-tracker/api:latest
+        image: samiko123/meds-tracker:v1.1
+        imagePullPolicy: Always  
+        envFrom:                            
+        - configMapRef:
+            name: meds-tracker-config
         ports:
         - containerPort: 4000
         env:
@@ -29,6 +35,10 @@ spec:
             secretKeyRef:
               name: meds-tracker-secrets
               key: JWT_SECRET
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "4000"
         resources:
           requests:
             memory: "256Mi"
