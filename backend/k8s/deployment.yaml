@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meds-tracker-api
+  namespace: meds-tracker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: meds-tracker-api
+  template:
+    metadata:
+      labels:
+        app: meds-tracker-api
+    spec:
+      imagePullSecrets:
+      - name: regcred 
+      containers:
+      - name: meds-tracker-api
+        image: samiko123/meds-tracker:v1.1
+        imagePullPolicy: Always  
+        envFrom:                            
+        - configMapRef:
+            name: meds-tracker-config
+        ports:
+        - containerPort: 4000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: meds-tracker-secrets
+              key: DATABASE_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: meds-tracker-secrets
+              key: JWT_SECRET
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "4000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 4000
+          initialDelaySeconds: 5
+          periodSeconds: 5

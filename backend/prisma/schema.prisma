@@ -4,8 +4,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "app/generated/prisma/client"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 enum MedicineUnit {
@@ -46,7 +46,6 @@ model PresetMedicine {
   @@index([name])
   @@index([category])
 }
-
 
 model UserMedicine {
   id               String           @id @default(uuid()) 

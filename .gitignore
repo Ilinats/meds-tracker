@@ -7,4 +7,6 @@ node_modules/
 
 */prisma/app/generated/
 
+*/k8s/secret.yaml
+
 precautions/
