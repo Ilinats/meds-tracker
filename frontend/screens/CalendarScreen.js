@@ -1,106 +1,124 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Alert, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { format, parseISO, isWithinInterval, isSameDay } from 'date-fns';
 import { medicineApi } from '../services/api';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+
+// TODO: header otgore, za da ne e tolkova grozno
+// TODO: taken butona da e4 sin kato ne si vzel i posle kato si vzel da e zelen
+// TODO: da se sortirat po vreme
 
 const CalendarScreen = () => {
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [medications, setMedications] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
-  const [daySchedule, setDaySchedule] = useState([]);
+
+  const recordIntakeMutation = medicineApi.useRecordIntake();
   
-  const { data: userMedicines, isLoading, refetch } = medicineApi.useUserMedicines();
+  useFocusEffect(
+    useCallback(() => {
+      loadMedications();
+    }, [])
+  );  
   
-  // Process medications to create marked dates and daily schedules
-  useEffect(() => {
-    if (userMedicines) {
-      processUserMedicines(userMedicines);
+  const loadMedications = async () => {
+    try {
+      const data = await medicineApi.getUserMedicines();
+      console.log('Medications:', JSON.stringify(data, null, 2));
+      setMedications(Array.isArray(data) ? data : data.medicines || []);
+      
+      updateMarkedDates(Array.isArray(data) ? data : data.medicines || []);
+    } catch (error) {
+      console.error('Error loading medications:', error);
+      Alert.alert('Error', 'Failed to load medications');
     }
-  }, [userMedicines, selectedDate]);
-  
-  const processUserMedicines = (medicines) => {
-    const newMarkedDates = {};
-    const selectedDateSchedules = [];
-    
-    medicines.forEach(medicine => {
-      if (!medicine.schedules || !medicine.startDate) return;
-      
-      const startDate = new Date(medicine.startDate);
-      const endDate = medicine.endDate ? new Date(medicine.endDate) : new Date(2099, 11, 31);
-      
-      // Skip if medicine is not active yet or has expired
-      if (new Date() > endDate || new Date() < startDate) return;
-      
-      medicine.schedules.forEach(schedule => {
-        // Process each schedule
-        const { repeatDays, timesOfDay, dosageAmount } = schedule;
-        
-        // Map day names to day numbers (0 = Sunday, 1 = Monday, etc.)
-        const dayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-        const repeatDayNumbers = repeatDays.map(day => dayMap[day]);
-        
-        // Mark dates in the calendar (for the current month and next month)
-        const today = new Date();
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0); // End of next month
-        
-        for (let d = new Date(startDate); d <= monthEnd && d <= endDate; d.setDate(d.getDate() + 1)) {
-          if (
-            d >= startDate && 
-            d <= endDate && 
-            repeatDayNumbers.includes(d.getDay())
-          ) {
-            const dateStr = format(d, 'yyyy-MM-dd');
-            if (!newMarkedDates[dateStr]) {
-              newMarkedDates[dateStr] = { marked: true, dotColor: '#5C6BC0' };
-            }
-            
-            // If this is the selected date, add to day schedule
-            if (isSameDay(d, parseISO(selectedDate))) {
-              timesOfDay.forEach(time => {
-                selectedDateSchedules.push({
-                  id: `${medicine.id}-${time}`,
-                  medicineId: medicine.id,
-                  scheduleId: schedule.id,
-                  medicineName: medicine.name,
-                  time,
-                  dosageAmount,
-                  unit: medicine.unit,
-                  category: medicine.category,
-                  prescription: medicine.prescription,
-                  quantity: medicine.quantity,
-                  expiryDate: medicine.expiryDate
-                });
-              });
-            }
-          }
-        }
-      });
-    });
-    
-    // Highlight selected date
-    newMarkedDates[selectedDate] = {
-      ...newMarkedDates[selectedDate],
-      selected: true,
-      selectedColor: '#3F51B5'
-    };
-    
-    // Sort schedules by time
-    selectedDateSchedules.sort((a, b) => {
-      return a.time.localeCompare(b.time);
-    });
-    
-    setMarkedDates(newMarkedDates);
-    setDaySchedule(selectedDateSchedules);
   };
   
-  const handleTakeMedication = async (medicineId, scheduleId) => {
+  const updateMarkedDates = (meds) => {
+    const marked = {};
+    meds.forEach(med => {
+      const startDate = new Date(med.startDate);
+      const endDate = new Date(med.endDate);
+      
+      for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
+        const dateStr = date.toISOString().split('T')[0];
+        const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+        
+        const isScheduled = med.schedules.some(schedule => 
+          schedule.repeatDays.includes(dayOfWeek)
+        );
+
+        if (isScheduled) {
+          marked[dateStr] = {
+            marked: true,
+            dotColor: '#4299e1',
+            selected: dateStr === selectedDate
+          };
+        }
+      }
+    });
+    setMarkedDates(marked);
+  };
+  
+  const getScheduledMedications = () => {
+    if (!medications || medications.length === 0) return [];
+    
+    const selectedDay = new Date(selectedDate);
+    const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' });
+    
+    const medicationsForDay = medications.filter(med => {
+      const startDate = new Date(med.startDate);
+      const endDate = new Date(med.endDate);
+      
+      const isInDateRange = selectedDay >= startDate && selectedDay <= endDate;
+      
+      const isScheduledForDay = med.schedules.some(schedule => 
+        schedule.repeatDays.includes(dayOfWeek)
+      );
+      
+      return isInDateRange && isScheduledForDay;
+    });
+    
+    return medicationsForDay.flatMap(med => {
+      return med.schedules.flatMap(schedule => {
+        return schedule.timesOfDay.map(time => ({
+          id: `${med.id}-${time}`,
+          medicineName: med.name,
+          category: med.category,
+          unit: med.unit,
+          quantity: med.quantity,
+          expiryDate: med.expiryDate,
+          dosageAmount: schedule.dosageAmount,
+          prescription: med.prescription,
+          time: time,
+          scheduleId: schedule.id
+        }));
+      });
+    }).sort((a, b) => {
+      return a.time.localeCompare(b.time);
+    });
+  };
+  
+  const handleRecordIntake = async (medicationSchedule) => {
     try {
-      await medicineApi.recordIntake(medicineId, scheduleId);
-      Alert.alert('Success', 'Medication intake recorded successfully!');
-      refetch(); // Refresh the data
+      console.log('Recording intake for medication:', medicationSchedule);
+      const medicationId = medicationSchedule.scheduleId;
+
+      console.log('Recording intake for medication ID:', medicationId);
+      console.log('Taken at:', new Date());
+
+      const result = await recordIntakeMutation.mutateAsync({ 
+        scheduleId: medicationId,
+        data: { takenAt: new Date() }
+      });
+      
+      Alert.alert('Success', 'Medication intake recorded');
+      loadMedications();
     } catch (error) {
       console.error('Error recording intake:', error);
-      Alert.alert('Error', 'Failed to record medication intake. Please try again.');
+      Alert.alert('Error', 'Failed to record medication intake');
     }
   };
   
@@ -109,12 +127,13 @@ const CalendarScreen = () => {
   };
   
   const formatTime = (timeString) => {
-    // Format 24-hour time (like "08:00") to "8:00 AM"
+    if (timeString === "Night") return "20:00 PM";
+    
     const [hours, minutes] = timeString.split(':');
     const hourNum = parseInt(hours, 10);
     const period = hourNum >= 12 ? 'PM' : 'AM';
     const hour12 = hourNum % 12 || 12;
-    return `${hour12}:${minutes} ${period}`;
+    return `${hour12}:${minutes || '00'} ${period}`;
   };
 
   const getDateHeader = () => {
@@ -127,6 +146,7 @@ const CalendarScreen = () => {
     const daysUntilExpiry = Math.ceil((new Date(item.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
     const isLowStock = item.quantity <= 5;
     const isExpiringSoon = daysUntilExpiry <= 7;
+    console.log('Item:', item);
     
     return (
       <View style={styles.scheduleItem}>
@@ -154,54 +174,61 @@ const CalendarScreen = () => {
         </View>
         <TouchableOpacity
           style={styles.takeButton}
-          onPress={() => handleTakeMedication(item.medicineId, item.scheduleId)}
+          onPress={() => handleRecordIntake(item)}
         >
-          <Text style={styles.takeButtonText}>Take Now</Text>
+          <Text style={styles.takeButtonText}>Taken</Text>
         </TouchableOpacity>
       </View>
     );
   };
+  
+  const scheduledMeds = getScheduledMedications();
   
   return (
     <SafeAreaView style={styles.container}>
       <Calendar
         current={selectedDate}
         onDayPress={onDayPress}
-        markedDates={markedDates}
+        markedDates={{
+          ...markedDates,
+          [selectedDate]: {
+            ...markedDates[selectedDate],
+            selected: true
+          }
+        }}
         theme={{
           calendarBackground: '#ffffff',
           textSectionTitleColor: '#b6c1cd',
-          selectedDayBackgroundColor: '#3F51B5',
+          selectedDayBackgroundColor: '#4299e1',
           selectedDayTextColor: '#ffffff',
-          todayTextColor: '#3F51B5',
+          todayTextColor: '#4299e1',
           dayTextColor: '#2d4150',
           textDisabledColor: '#d9e1e8',
-          dotColor: '#5C6BC0',
+          dotColor: '#4299e1',
           selectedDotColor: '#ffffff',
-          arrowColor: '#3F51B5',
+          arrowColor: '#4299e1',
           monthTextColor: '#3F51B5',
           indicatorColor: '#3F51B5',
         }}
       />
       
-      <View style={styles.scheduleContainer}>
+      <ScrollView style={styles.scheduleContainer}>
         <Text style={styles.dateHeader}>{getDateHeader()}</Text>
         
-        {isLoading ? (
-          <Text style={styles.loadingText}>Loading medication schedule...</Text>
-        ) : daySchedule.length > 0 ? (
+        {scheduledMeds.length > 0 ? (
           <FlatList
-            data={daySchedule}
+            data={scheduledMeds}
             keyExtractor={(item) => item.id}
             renderItem={renderScheduleItem}
             contentContainerStyle={styles.scheduleList}
+            scrollEnabled={false}
           />
         ) : (
           <View style={styles.emptySchedule}>
             <Text style={styles.emptyText}>No medications scheduled for this day.</Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -303,12 +330,6 @@ const styles = StyleSheet.create({
     color: '#888',
     textAlign: 'center',
   },
-  loadingText: {
-    fontSize: 16,
-    color: '#888',
-    textAlign: 'center',
-    marginTop: 20,
-  }
 });
 
 export default CalendarScreen;

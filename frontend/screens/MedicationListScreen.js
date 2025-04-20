@@ -15,7 +15,6 @@ const MedicationListScreen = ({ navigation }) => {
   const [medications, setMedications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load medications when screen is focused
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       loadMedications();
@@ -24,12 +23,10 @@ const MedicationListScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
-  // Fetch medications
   const loadMedications = async () => {
     try {
       setIsLoading(true);
       const data = await medicineApi.getUserMedicines();
-      console.log('Fetched medications:', data);
       setMedications(data);
     } catch (error) {
       console.error('Error loading medications:', error);
@@ -59,15 +56,6 @@ const MedicationListScreen = ({ navigation }) => {
     );
   };
 
-  const renderAddButton = () => (
-    <TouchableOpacity
-      style={styles.addButton}
-      onPress={() => navigation.navigate('AddMedication')}
-    >
-      <Ionicons name="add" size={30} color="white" />
-    </TouchableOpacity>
-  );
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -88,8 +76,6 @@ const MedicationListScreen = ({ navigation }) => {
         refreshing={isLoading}
         onRefresh={loadMedications}
       />
-      
-      {renderAddButton()}
     </View>
   );
 };

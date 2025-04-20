@@ -33,6 +33,8 @@ const CATEGORIES = [
   'Other',
 ];
 
+//TODO: Kude sa mi preset medicatonite?
+
 const AddMedicationScreen = ({ navigation }) => {
   const [medicationName, setMedicationName] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -53,7 +55,7 @@ const AddMedicationScreen = ({ navigation }) => {
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
   const [schedule, setSchedule] = useState({
-    timesOfDay: ['Night'],
+    timesOfDay: ['8:00, 14:00'],
     repeatDays: ['Tuesday', 'Thursday'],
     dosageAmount: 1
   });
@@ -62,7 +64,7 @@ const AddMedicationScreen = ({ navigation }) => {
     data: presetData, 
     isLoading: isLoadingPresets,
     error: presetError
-  } = medicineApi.getPresetMedicines({ search: searchQuery });
+  } = medicineApi.usePresetMedicines({ search: searchQuery });
 
   const { addMedication } = useMedications();
 

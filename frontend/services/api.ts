@@ -190,7 +190,7 @@ export const medicineApi = {
 
 
   updateUserMedicine: async (id: string, medicineData: MedicineData) => {
-    const response = await apiClient.put(`/collection/${id}`, medicineData);
+    const response = await apiClient.put(`/medicines/collection/${id}`, medicineData);
     return response.data;
   },
 
@@ -200,7 +200,7 @@ export const medicineApi = {
   },
 
   recordMedicineIntake: async (scheduleId: string, data?: { takenAt?: Date }) => {
-    const response = await apiClient.post(`/intake/${scheduleId}`, data || {});
+    const response = await apiClient.post(`/medicines/intake/${scheduleId}`, data || {});
     return response.data;
   },
 

@@ -15,34 +15,32 @@ import { format } from 'date-fns';
 
 const MedicationDetailScreen = ({ route, navigation }) => {
   const { medicationId } = route.params;
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedMedication, setEditedMedication] = useState(null);
+  const recordIntakeMutation = medicineApi.useRecordIntake();
   
   const { data: medication, isLoading, refetch } = medicineApi.useUserMedicines();
   const currentMedication = medication?.find(med => med.id === medicationId);
 
-  const handleTakeMedication = async (scheduleId) => {
-    try {
-      await medicineApi.recordIntake(medicationId, scheduleId);
-      Alert.alert('Success', 'Medication intake recorded successfully!');
-      refetch(); // Refresh the data
-    } catch (error) {
-      console.error('Error recording intake:', error);
-      Alert.alert('Error', 'Failed to record medication intake. Please try again.');
-    }
-  };
-
-  const handleUpdateMedication = async () => {
-    try {
-      await medicineApi.updateUserMedicine(medicationId, editedMedication);
-      Alert.alert('Success', 'Medication updated successfully!');
-      setIsEditing(false);
-      refetch();
-    } catch (error) {
-      console.error('Error updating medication:', error);
-      Alert.alert('Error', 'Failed to update medication. Please try again.');
-    }
-  };
+    const handleTakeMedication = async (scheduleId) => {
+      try {
+        console.log('Recording intake for medication:', scheduleId);
+        const medicationId = scheduleId;
+  
+        console.log('Recording intake for medication ID:', medicationId);
+        console.log('Taken at:', new Date());
+  
+        const result = await recordIntakeMutation.mutateAsync({ 
+          scheduleId: medicationId,
+          data: { takenAt: new Date() }
+        });
+        
+        Alert.alert('Success', 'Medication intake recorded');
+        refetch();
+      } catch (error) {
+        console.error('Error recording intake:', error);
+        Alert.alert('Error', 'Failed to record medication intake');
+      }
+    };
+    
 
   const handleDeleteMedication = async () => {
     Alert.alert(
@@ -68,13 +66,6 @@ const MedicationDetailScreen = ({ route, navigation }) => {
     );
   };
 
-  const handleEditField = (field, value) => {
-    setEditedMedication(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
   if (isLoading || !currentMedication) {
     return (
       <View style={styles.loadingContainer}>
@@ -94,47 +85,12 @@ const MedicationDetailScreen = ({ route, navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#3F51B5" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Medication Details</Text>
-        <TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
-          <Ionicons name={isEditing ? "checkmark" : "pencil"} size={24} color="#3F51B5" />
+        <TouchableOpacity>
+            <Ionicons name="checkmark" size={24} color="#ffffff" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
-        {isEditing ? (
-          <>
-            <TextInput
-              style={styles.input}
-              value={editedMedication?.name || currentMedication.name}
-              onChangeText={(text) => handleEditField('name', text)}
-              placeholder="Medication Name"
-            />
-            <TextInput
-              style={styles.input}
-              value={editedMedication?.quantity?.toString() || currentMedication.quantity.toString()}
-              onChangeText={(text) => handleEditField('quantity', parseInt(text))}
-              placeholder="Quantity"
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={styles.input}
-              value={editedMedication?.unit || currentMedication.unit}
-              onChangeText={(text) => handleEditField('unit', text)}
-              placeholder="Unit"
-            />
-            <TextInput
-              style={styles.input}
-              value={editedMedication?.category || currentMedication.category}
-              onChangeText={(text) => handleEditField('category', text)}
-              placeholder="Category"
-            />
-            <TouchableOpacity 
-              style={styles.updateButton}
-              onPress={handleUpdateMedication}
-            >
-              <Text style={styles.updateButtonText}>Update Medication</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
           <>
             <Text style={styles.medicationName}>{currentMedication.name}</Text>
             <View style={styles.infoRow}>
@@ -162,7 +118,6 @@ const MedicationDetailScreen = ({ route, navigation }) => {
               </View>
             )}
           </>
-        )}
       </View>
 
       <View style={styles.schedulesContainer}>
