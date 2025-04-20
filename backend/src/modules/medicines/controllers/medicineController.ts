@@ -1,252 +1,3 @@
-// import { PrismaClient, MedicineUnit, Prisma } from '../../prisma/app/generated/prisma/client';
-// import { Request, Response } from 'express';
-
-// const prisma = new PrismaClient();
-// const userId = "f6960d1a-db9a-46c5-b76d-147fd7743e76";
-
-// interface AuthRequest extends Request {
-//   user?: {
-//     id: string;
-//   };
-// }
-
-// export const addToCollection = async (req: AuthRequest, res: Response) => {
-//   try {
-//     const {
-//       name,
-//       category,
-//       unit,
-//       quantity,
-//       expiryDate,
-//       startDate,
-//       endDate,
-//       dosagePerDay,
-//       prescription,
-//       presetMedicineId, 
-//       schedules 
-//     } = req.body;
-
-//     const userMedicine = await prisma.userMedicine.create({
-//       data: {
-//         name,
-//         category,
-//         unit: unit as MedicineUnit,
-//         quantity,
-//         expiryDate: new Date(expiryDate),
-//         startDate: startDate ? new Date(startDate) : null,
-//         endDate: endDate ? new Date(endDate) : null,
-//         dosagePerDay,
-//         prescription,
-//         isPreset: !!presetMedicineId,
-//         // userId: req.user!.id,
-//         userId: userId,
-//         presetMedicineId,
-//         ...(schedules && {
-//           schedules: {
-//             create: schedules.map((schedule: any) => ({
-//             //   userId: req.user!.id,
-//               userId: userId,
-//               timesOfDay: schedule.timesOfDay,
-//               repeatDays: schedule.repeatDays,
-//               dosageAmount: schedule.dosageAmount
-//             }))
-//           }
-//         })
-//       },
-//       include: {
-//         schedules: true,
-//         presetMedicine: true
-//       }
-//     });
-
-//     res.status(201).json({
-//       success: true,
-//       data: userMedicine
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       success: false,
-//       error: {
-//         message: 'Unable to add medicine to collection'
-//       }
-//     });
-//   }
-// };
-
-// export const removeFromCollection = async (req: AuthRequest, res: Response) => {
-//     try {
-//       const { id } = req.params;
-  
-//       await prisma.medicineSchedule.deleteMany({
-//         where: {
-//           userMedicineId: id,
-//         //   userId: req.user!.id
-//           userId: userId
-//         }
-//       });
-  
-//       await prisma.userMedicine.delete({
-//         where: {
-//           id,
-//         //   userId: req.user!.id
-//           userId: userId
-//         }
-//       });
-  
-//     res.json({
-//         success: true,
-//         message: 'Medicine removed from collection'
-//     });
-//     } catch (error) {
-//         res.status(400).json({
-//         success: false,
-//         error: {
-//             message: 'Unable to remove medicine from collection'
-//         }
-//         });
-//     }
-// };
-
-// export const getAllPresetMedicines = async (req: AuthRequest, res: Response) => {
-//   try {
-//     const { search, category, page = 1, limit = 10 } = req.query;
-    
-//     const where = {
-//       ...(search && {
-//         OR: [
-//           { name: { contains: String(search), mode: 'insensitive' } },
-//           { category: { contains: String(search), mode: 'insensitive' } }
-//         ]
-//       }),
-//       ...(category && { category: String(category) })
-//     };
-
-//     const medicines = await prisma.presetMedicine.findMany({
-//       skip: (Number(page) - 1) * Number(limit),
-//       take: Number(limit),
-//       orderBy: {
-//         name: 'asc'
-//       }
-//     });
-
-//     const total = await prisma.presetMedicine.count({});
-
-//     res.json({
-//       success: true,
-//       data: {
-//         medicines,
-//         pagination: {
-//           total,
-//           pages: Math.ceil(total / Number(limit)),
-//           currentPage: Number(page)
-//         }
-//       }
-//     });
-//     } catch (error) {
-//       res.status(400).json({
-//         success: false,
-//         error: {
-//           message: 'Unable to fetch preset medicines'
-//         }
-//       });
-//     }
-// };
-
-// export const getUserMedicines = async (req: AuthRequest, res: Response) => {
-//   try {
-//     const { search, category } = req.query;
-
-//     const medicines = await prisma.userMedicine.findMany({
-//       where: {
-//         userId: userId,
-//         ...(search && {
-//           OR: [
-//             { name: { contains: String(search), mode: 'insensitive' } },
-//             { category: { contains: String(search), mode: 'insensitive' } }
-//           ]
-//         }),
-//         ...(category && { category: String(category) })
-//       },
-//       include: {
-//         schedules: true,
-//         presetMedicine: false
-//       },
-//       orderBy: {
-//         createdAt: 'desc'
-//       }
-//     });
-
-//     res.json({
-//       success: true,
-//       data: medicines
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       success: false,
-//       error: {
-//         message: 'Unable to fetch user medicines'
-//       }
-//     });
-//   }
-// };
-
-// export const updateUserMedicine = async (req: AuthRequest, res: Response) => {
-//   try {
-//     const { id } = req.params;
-//     const {
-//       quantity,
-//       startDate,
-//       endDate,
-//       dosagePerDay,
-//       schedules,
-//       ...updateData
-//     } = req.body;
-
-//     const medicine = await prisma.userMedicine.update({
-//       where: {
-//         id,
-//         // userId: req.user!.id
-//         userId: userId
-//       },
-//       data: {
-//         ...updateData,
-//         quantity,
-//         startDate: startDate ? new Date(startDate) : undefined,
-//         endDate: endDate ? new Date(endDate) : undefined,
-//         dosagePerDay,
-//         ...(schedules && {
-//           schedules: {
-//             deleteMany: {},
-//             create: schedules.map((schedule: any) => ({
-//               // userId: req.user!.id,
-//               userId: userId,
-//               timesOfDay: schedule.timesOfDay,
-//               repeatDays: schedule.repeatDays,
-//               dosageAmount: schedule.dosageAmount
-//             }))
-//           }
-//         })
-//       },
-//       include: {
-//         schedules: true,
-//         presetMedicine: true
-//       }
-//     });
-
-//     res.json({
-//       success: true,
-//       data: medicine
-//     });
-//   } catch (error) {
-//     res.status(400).json({
-//       success: false,
-//       error: {
-//         message: 'Unable to update medicine'
-//       }
-//     });
-//   }
-// };
-
 import { PrismaClient, MedicineUnit, Prisma } from '../../../../prisma/app/generated/prisma/client';
 import { Request, Response } from 'express';
 
@@ -274,95 +25,119 @@ export const addToCollection = async (req: AuthRequest, res: Response) => {
       schedules 
     } = req.body;
 
-    const userId = req.user?.id; // Get the user ID from the decoded JWT
+    const userId = req.user?.id; 
 
     if (!userId) {
       res.status(401).json({ success: false, error: { message: 'User not authenticated' } });
       return;
     }
 
-    const userMedicine = await prisma.userMedicine.create({
-      data: {
-        name,
-        category,
-        unit: unit as MedicineUnit,
-        quantity,
-        expiryDate: new Date(expiryDate),
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
-        dosagePerDay,
-        prescription,
-        isPreset: !!presetMedicineId,
-        userId, // Use dynamic user ID
-        presetMedicineId,
-        ...(schedules && {
-          schedules: {
-            create: schedules.map((schedule: any) => ({
-              userId,
-              timesOfDay: schedule.timesOfDay,
-              repeatDays: schedule.repeatDays,
-              dosageAmount: schedule.dosageAmount
-            }))
-          }
-        })
-      },
-      include: {
-        schedules: true,
-        presetMedicine: true
-      }
-    });
+    if (!name || !category || !unit || quantity === undefined || !expiryDate) {
+        res.status(400).json({
+        success: false,
+        error: { message: 'Missing required fields' }
+      });
+      return;
+    }
 
-    res.status(201).json({
-      success: true,
-      data: userMedicine
-    });
+    try {
+      const userMedicine = await prisma.userMedicine.create({
+        data: {
+          name,
+          category,
+          unit: unit as MedicineUnit,
+          quantity: Number(quantity),
+          expiryDate: new Date(expiryDate),
+          startDate: startDate ? new Date(startDate) : null,
+          endDate: endDate ? new Date(endDate) : null,
+          dosagePerDay: dosagePerDay ? Number(dosagePerDay) : null,
+          prescription: prescription || null,
+          isPreset: Boolean(presetMedicineId),
+          userId,
+          presetMedicineId,
+          ...(schedules && {
+            schedules: {
+              create: schedules.map((schedule: any) => ({
+                userId,
+                timesOfDay: Array.isArray(schedule.timesOfDay) ? schedule.timesOfDay : [],
+                repeatDays: Array.isArray(schedule.repeatDays) ? schedule.repeatDays : [],
+                dosageAmount: Number(schedule.dosageAmount) || 1
+              }))
+            }
+          })
+        },
+        include: {
+          schedules: true,
+          presetMedicine: true
+        }
+      });
+
+      res.status(201).json({
+        success: true,
+        data: userMedicine
+      });
+      return;
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      res.status(400).json({
+        success: false,
+        error: { message: 'Invalid data format' }
+      });
+      return;
+    }
   } catch (error) {
     console.error(error);
-    res.status(400).json({
+    res.status(500).json({
       success: false,
-      error: {
-        message: 'Unable to add medicine to collection'
-      }
+      error: { message: 'Unable to add medicine to collection' }
     });
+    return;
   }
 };
 
 export const removeFromCollection = async (req: AuthRequest, res: Response) => {
-    try {
-      const { id } = req.params;
-      const userId = req.user?.id;
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
 
-      if (!userId) {
-        res.status(401).json({ success: false, error: { message: 'User not authenticated' } });
-        return;
-      }
-
-      await prisma.medicineSchedule.deleteMany({
-        where: {
-          userMedicineId: id,
-          userId
-        }
-      });
-
-      await prisma.userMedicine.delete({
-        where: {
-          id,
-          userId
-        }
-      });
-
-      res.json({
-        success: true,
-        message: 'Medicine removed from collection'
-      });
-    } catch (error) {
-        res.status(400).json({
-        success: false,
-        error: {
-          message: 'Unable to remove medicine from collection'
-        }
-      });
+    if (!userId) {
+      res.status(401).json({ success: false, error: { message: 'User not authenticated' } });
+      return;
     }
+
+    const medicine = await prisma.userMedicine.findFirst({
+      where: { id, userId }
+    });
+
+    if (!medicine) {
+      res.status(404).json({
+        success: false,
+        error: { message: 'Medicine not found' }
+      });
+      return;
+    }
+
+    await prisma.$transaction([
+      prisma.medicineSchedule.deleteMany({
+        where: { userMedicineId: id, userId }
+      }),
+      prisma.userMedicine.delete({
+        where: { id, userId }
+      })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Medicine removed from collection'
+    });
+    return;
+  } catch (error) {
+      res.status(400).json({
+      success: false,
+      error: { message: 'Unable to remove medicine from collection' }
+    });
+    return;
+  }
 };
 
 export const getAllPresetMedicines = async (req: AuthRequest, res: Response) => {
@@ -421,37 +196,39 @@ export const getUserMedicines = async (req: AuthRequest, res: Response) => {
 
     const { search, category } = req.query;
 
+    const where: Prisma.UserMedicineWhereInput = {
+      userId,
+      ...(search && {
+        OR: [
+          { name: { contains: String(search), mode: 'insensitive' } },
+          { category: { contains: String(search), mode: 'insensitive' } }
+        ]
+      }),
+      ...(category && { category: String(category) })
+    };
+
     const medicines = await prisma.userMedicine.findMany({
-      where: {
-        userId,
-        ...(search && {
-          OR: [
-            { name: { contains: String(search), mode: 'insensitive' } },
-            { category: { contains: String(search), mode: 'insensitive' } }
-          ]
-        }),
-        ...(category && { category: String(category) })
-      },
+      where,
       include: {
         schedules: true,
-        presetMedicine: false
+        presetMedicine: true
       },
       orderBy: {
         createdAt: 'desc'
       }
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: medicines
     });
+    return;
   } catch (error) {
     res.status(400).json({
       success: false,
-      error: {
-        message: 'Unable to fetch user medicines'
-      }
+      error: { message: 'Unable to fetch user medicines' }
     });
+    return;
   }
 };
 
@@ -459,6 +236,9 @@ export const updateUserMedicine = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const {
+      name,
+      category,
+      unit,
       quantity,
       startDate,
       endDate,
@@ -474,25 +254,40 @@ export const updateUserMedicine = async (req: AuthRequest, res: Response) => {
       return;
     }
 
+    const existingMedicine = await prisma.userMedicine.findFirst({
+      where: { id, userId }
+    });
+
+    if (!existingMedicine) {
+        res.status(404).json({
+        success: false,
+        error: { message: 'Medicine not found' }
+      });
+      return;
+    }
+
     const medicine = await prisma.userMedicine.update({
       where: {
         id,
         userId
       },
       data: {
+        ...(name && { name }),
+        ...(category && { category }),
+        ...(unit && { unit: unit as MedicineUnit }),
+        ...(quantity !== undefined && { quantity: Number(quantity) }),
+        ...(startDate && { startDate: new Date(startDate) }),
+        ...(endDate && { endDate: new Date(endDate) }),
+        ...(dosagePerDay !== undefined && { dosagePerDay: Number(dosagePerDay) }),
         ...updateData,
-        quantity,
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        dosagePerDay,
         ...(schedules && {
           schedules: {
             deleteMany: {},
             create: schedules.map((schedule: any) => ({
               userId,
-              timesOfDay: schedule.timesOfDay,
-              repeatDays: schedule.repeatDays,
-              dosageAmount: schedule.dosageAmount
+              timesOfDay: Array.isArray(schedule.timesOfDay) ? schedule.timesOfDay : [],
+              repeatDays: Array.isArray(schedule.repeatDays) ? schedule.repeatDays : [],
+              dosageAmount: Number(schedule.dosageAmount) || 1
             }))
           }
         })
@@ -503,16 +298,16 @@ export const updateUserMedicine = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: medicine
     });
+    return;
   } catch (error) {
     res.status(400).json({
       success: false,
-      error: {
-        message: 'Unable to update medicine'
-      }
+      error: { message: 'Unable to update medicine' }
     });
+    return;
   }
 };
