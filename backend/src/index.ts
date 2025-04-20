@@ -45,6 +45,7 @@ import { AuthModule } from './modules/auth';
 import { MedicinesModule } from './modules/medicines';
 import { SchedulerModule } from './modules/scheduler';
 import { PrismaClient } from '@prisma/client';
+import { authMiddleware } from '../src/shared/middleware/auth.middleware';
 const prisma = new PrismaClient();
 
 const app = express();
@@ -55,17 +56,25 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize scheduler
-SchedulerModule.initialize();
+if (process.env.NODE_ENV !== 'test') {
+  SchedulerModule.initialize();
+}
 
-// Mount routes
 app.use('/api/auth', AuthModule.routes);
 app.use('/api/medicines', MedicinesModule.routes);
 app.use('/api/scheduler', SchedulerModule.routes);
 
+app.get('/api/protected', authMiddleware, (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      message: 'You have access to this protected route'
+    }
+  });
+});
+
 app.get('/health', async (req, res) => {
   try {
-    // Test database connection
     await prisma.$queryRaw`SELECT 1`;
 
     res.status(200).json({
@@ -93,7 +102,11 @@ app.get('/health', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export default app;

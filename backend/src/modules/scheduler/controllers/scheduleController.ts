@@ -2,7 +2,6 @@ import { PrismaClient, MedicineUnit } from '../../../../prisma/app/generated/pri
 import { Request, Response } from 'express';
 
 const prisma = new PrismaClient();
-// const userId = "f6960d1a-db9a-46c5-b76d-147fd7743e76";
 
 interface AuthRequest extends Request {
     user?: {
@@ -18,7 +17,6 @@ export const getExpiringMedicines = async (req: AuthRequest, res: Response) => {
       const medicines = await prisma.userMedicine.findMany({
         where: {
           userId: req.user!.id,
-          // userId: userId,
           expiryDate: {
             lte: sevenDaysFromNow,
             gte: new Date()
@@ -52,7 +50,6 @@ export const getLowStockMedicines = async (req: AuthRequest, res: Response) => {
       const medicines = await prisma.userMedicine.findMany({
         where: {
           userId: req.user!.id,
-          // userId: userId,
           quantity: {
             lte: 5
           }
