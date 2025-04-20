@@ -1,5 +1,10 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/authService';
+import { AuthRequest } from '../../../shared/types/express.types';
+import { PrismaClient, MedicineUnit } from '../../../../prisma/app/generated/prisma/client';
+
+
+const prisma = new PrismaClient();
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -68,6 +73,39 @@ export const login = async (req: Request, res: Response) => {
       success: false,
       error: {
         message: 'Invalid credentials'
+      }
+    });
+  }
+};
+
+export const updatePushToken = async (req: AuthRequest, res: Response) => {
+  try {
+    const { pushToken } = req.body;
+    
+    if (!pushToken) {
+        res.status(400).json({
+        success: false,
+        error: {
+          message: 'Push token is required'
+        }
+      });
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: req.user!.id },
+      data: { pushToken }
+    });
+
+    res.json({
+      success: true,
+      message: 'Push token updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Unable to update push token'
       }
     });
   }
