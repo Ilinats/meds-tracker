@@ -33,7 +33,8 @@ const CATEGORIES = [
   'Other',
 ];
 
-//TODO: Kude sa mi preset medicatonite?
+//TODO: Proverka dali dnite sa validni i dali time of day e validno vreme
+//TODO: ne moga da scrollvam na kategoriqta, tova trqbva da se opravi
 
 const AddMedicationScreen = ({ navigation }) => {
   const [medicationName, setMedicationName] = useState('');

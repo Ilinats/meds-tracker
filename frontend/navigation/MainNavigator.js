@@ -15,7 +15,6 @@ import MedicationDetailScreen from '../screens/MedicationDetailScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Stack navigators for each tab
 const MedicationStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="MedicationList" component={MedicationListScreen} />
@@ -24,7 +23,6 @@ const MedicationStack = () => (
   </Stack.Navigator>
 );
 
-// Custom tab bar
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
     <View style={styles.tabBarContainer}>
@@ -33,7 +31,6 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         const label = options.tabBarLabel || options.title || route.name;
         const isFocused = state.index === index;
         
-        // Custom style for middle button
         const isMiddleButton = index === 1;
         
         const onPress = () => {

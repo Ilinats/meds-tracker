@@ -9,6 +9,7 @@ import { useCallback } from 'react';
 // TODO: header otgore, za da ne e tolkova grozno
 // TODO: taken butona da e4 sin kato ne si vzel i posle kato si vzel da e zelen
 // TODO: da se sortirat po vreme
+// TODO: da mojesh da cukash na taken samo ako e v sushtiq den, ne da mojesh da cukash na vreme koeto e minalo ili da e v budeshteto
 
 const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);

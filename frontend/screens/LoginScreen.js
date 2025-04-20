@@ -8,7 +8,9 @@ import { useUser } from '../context/UserContext';
 import { useRouter } from 'expo-router';
 
 
-//TODO: dobavi da ima ochence da moje da si vidi parolata
+// TODO: dobavi da ima ochence da moje da si vidi parolata
+// TODO: tokena sled izvestno vreme da se maha ot storage-a
+// TODO: svurji s registeraciq
 
 const LoginScreen = () => {
   const [username, setUsername] = useState('');
@@ -30,6 +32,11 @@ const LoginScreen = () => {
       return;
     }
 
+    if (password.length < 8) {
+        setError('Password must be at least 8 characters');
+        return;
+    }
+
     try {
       const success = await login(username, password);
       if (!success) {
@@ -48,10 +55,6 @@ const LoginScreen = () => {
         style={styles.container}
       >
         <View style={styles.innerContainer}>
-          {/* <Image 
-            source={require('../assets/icon.png')}
-            style={styles.logo}
-          /> */}
           <Text style={styles.title}>MedTracker</Text>
 
           <View style={styles.formContainer}>

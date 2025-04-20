@@ -15,9 +15,10 @@ import {
 import { useUser } from '../context/UserContext';
 import { useRouter } from 'expo-router';
 
+// TODO: dobavi da ima ochence da moje da si vidi parolata i dobavi celiq ekran
+
 const RegisterScreen = () => {
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +29,7 @@ const RegisterScreen = () => {
     setError('');
     
     // Basic validation
-    if (!username || !email || !password || !confirmPassword) {
+    if (!username || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -38,22 +39,14 @@ const RegisterScreen = () => {
       return;
     }
     
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
 
     try {
-      const success = await register(username, email, password);
+      const success = await register(username, password);
       if (success) {
-        // Registration successful, navigate to the main app
         router.replace('/(main)/index');
       } else {
         setError('Registration failed. Please try again.');
@@ -61,7 +54,7 @@ const RegisterScreen = () => {
     } catch (error) {
       console.error('Registration error:', error);
       if (error.message?.includes('exists')) {
-        setError('Username or email already exists');
+        setError('Username already exists');
       } else {
         setError('Registration failed. Please try again.');
       }
@@ -90,16 +83,6 @@ const RegisterScreen = () => {
                 placeholder="Choose a username"
                 value={username}
                 onChangeText={setUsername}
-                autoCapitalize="none"
-              />
-
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
                 autoCapitalize="none"
               />
 

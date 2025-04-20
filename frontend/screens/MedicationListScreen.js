@@ -3,8 +3,7 @@ import {
   View, 
   Text, 
   FlatList, 
-  StyleSheet, 
-  TouchableOpacity,
+  StyleSheet,
   ActivityIndicator 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

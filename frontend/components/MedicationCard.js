@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const MedicationCard = ({ medication, onPress }) => {
-  // Calculate days until expiry
   const daysUntilExpiry = () => {
     const today = new Date();
     const expiryDate = new Date(medication.expiryDate);
@@ -12,27 +11,20 @@ const MedicationCard = ({ medication, onPress }) => {
     return diffDays;
   };
 
-  // Check if medication is low in stock
   const isLowStock = medication.quantity <= 5;
   
-  // Check if medication is expiring soon
   const isExpiringSoon = daysUntilExpiry() <= 7;
 
-  // Function to get appropriate schedule display
   const getScheduleDisplay = () => {
     if (!medication.schedules || medication.schedules.length === 0) {
       return 'No schedule set';
     }
 
-    // Get the first schedule for display
     const schedule = medication.schedules[0];
     
-    // Format days
     const days = schedule.repeatDays.join(', ');
     
-    // Format times
     const times = schedule.timesOfDay.map(time => {
-      // Convert 24hr format to 12hr if needed
       const [hour, minute] = time.split(':');
       return `${hour}:${minute}`;
     }).join(', ');
@@ -40,7 +32,6 @@ const MedicationCard = ({ medication, onPress }) => {
     return `${days} at ${times}`;
   };
 
-  // Get unit display
   const getUnitDisplay = () => {
     switch (medication.unit) {
       case 'PILLS':
