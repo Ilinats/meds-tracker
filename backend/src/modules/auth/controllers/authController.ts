@@ -78,35 +78,40 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const updatePushToken = async (req: AuthRequest, res: Response) => {
+export const updatePushToken = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const userId = req.user?.id;
     const { pushToken } = req.body;
-    
-    if (!pushToken) {
-        res.status(400).json({
+
+    if (!userId) {
+      res.status(401).json({
         success: false,
-        error: {
-          message: 'Push token is required'
-        }
+        error: { message: 'User not authenticated' }
       });
       return;
     }
 
-    await prisma.user.update({
-      where: { id: req.user!.id },
+    if (!pushToken) {
+      res.status(400).json({
+        success: false,
+        error: { message: 'Push token is required' }
+      });
+      return;
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
       data: { pushToken }
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
-      message: 'Push token updated successfully'
+      data: { pushToken: user.pushToken }
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
-      error: {
-        message: 'Unable to update push token'
-      }
+      error: { message: 'Unable to update push token' }
     });
   }
 };

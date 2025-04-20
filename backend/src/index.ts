@@ -4,7 +4,7 @@ import { AuthModule } from './modules/auth';
 import { MedicinesModule } from './modules/medicines';
 import { SchedulerModule } from './modules/scheduler';
 import { PrismaClient } from '@prisma/client';
-import { authMiddleware } from '../src/shared/middleware/auth.middleware';
+import { authMiddleware } from './shared/middleware/auth.middleware';
 const prisma = new PrismaClient();
 
 const app = express();
