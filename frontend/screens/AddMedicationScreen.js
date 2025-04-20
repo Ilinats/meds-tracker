@@ -62,7 +62,7 @@ const AddMedicationScreen = ({ navigation }) => {
     data: presetData, 
     isLoading: isLoadingPresets,
     error: presetError
-  } = medicineApi.usePresetMedicines({ search: searchQuery });
+  } = medicineApi.getPresetMedicines({ search: searchQuery });
 
   const { addMedication } = useMedications();
 
@@ -370,7 +370,7 @@ const AddMedicationScreen = ({ navigation }) => {
               style={styles.modalInput}
               value={schedule.timesOfDay.join(', ')}
               onChangeText={(text) => setSchedule(prev => ({ ...prev, timesOfDay: text.split(',').map(item => item.trim()) }))}
-              placeholder="e.g., Morning, Night"
+              placeholder="e.g., 8:00, 14:00"
             />
 
             <Text style={styles.modalLabel}>Repeat Days (comma separated)</Text>

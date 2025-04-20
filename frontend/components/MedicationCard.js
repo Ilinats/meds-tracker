@@ -12,6 +12,12 @@ const MedicationCard = ({ medication, onPress }) => {
     return diffDays;
   };
 
+  // Check if medication is low in stock
+  const isLowStock = medication.quantity <= 5;
+  
+  // Check if medication is expiring soon
+  const isExpiringSoon = daysUntilExpiry() <= 7;
+
   // Function to get appropriate schedule display
   const getScheduleDisplay = () => {
     if (!medication.schedules || medication.schedules.length === 0) {
@@ -77,6 +83,23 @@ const MedicationCard = ({ medication, onPress }) => {
           Expires in {daysUntilExpiry()} days
         </Text>
       </View>
+
+      {(isLowStock || isExpiringSoon) && (
+        <View style={styles.warningContainer}>
+          {isLowStock && (
+            <View style={styles.warningItem}>
+              <Ionicons name="warning" size={16} color="#E53E3E" />
+              <Text style={styles.warningText}>Low stock: {medication.quantity} remaining</Text>
+            </View>
+          )}
+          {isExpiringSoon && (
+            <View style={styles.warningItem}>
+              <Ionicons name="warning" size={16} color="#ECC94B" />
+              <Text style={styles.warningText}>Expires in {daysUntilExpiry()} days</Text>
+            </View>
+          )}
+        </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -84,15 +107,15 @@ const MedicationCard = ({ medication, onPress }) => {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
-    borderRadius: 10,
     padding: 16,
     marginHorizontal: 16,
-    marginTop: 16,
+    marginVertical: 8,
+    borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
@@ -104,18 +127,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#2d3748',
-    flex: 1,
   },
   quantityContainer: {
-    backgroundColor: '#ebf4ff',
-    paddingHorizontal: 10,
+    backgroundColor: '#EBF8FF',
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 16,
+    borderRadius: 12,
   },
   quantity: {
-    color: '#4299e1',
-    fontWeight: '500',
     fontSize: 14,
+    color: '#3182CE',
+    fontWeight: '500',
   },
   infoRow: {
     flexDirection: 'row',
@@ -123,14 +145,30 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   infoText: {
-    marginLeft: 8,
-    color: '#4a5568',
     fontSize: 14,
+    color: '#4a5568',
+    marginLeft: 8,
   },
   expiryText: {
-    marginLeft: 8,
-    color: '#ed8936', // Orange color for expiry
     fontSize: 14,
+    color: '#4a5568',
+    marginLeft: 8,
+  },
+  warningContainer: {
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: '#FFF5F5',
+    borderRadius: 8,
+  },
+  warningItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#E53E3E',
+    marginLeft: 8,
   },
 });
 

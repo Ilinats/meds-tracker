@@ -195,7 +195,7 @@ export const medicineApi = {
   },
 
   removeFromCollection: async (id: string) => {
-    const response = await apiClient.delete(`/collection/${id}`);
+    const response = await apiClient.delete(`/medicines/collection/${id}`);
     return response.data;
   },
 
