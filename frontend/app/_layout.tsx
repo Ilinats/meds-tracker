@@ -10,6 +10,7 @@ import { useColorScheme } from '../hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserProvider } from '../context/UserContext';
 import { MedicationProvider } from '../context/MedicationContext';
+import NotificationManager from "../components/NotificationManager"
 
 SplashScreen.preventAutoHideAsync();
 
@@ -54,6 +55,7 @@ export default function Layout() {
     <QueryClientProvider client={queryClient}>
       <UserProvider>
         <MedicationProvider>
+            <NotificationManager />
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
             <Stack screenOptions={{ headerShown: false }} />
             <StatusBar style="auto" />
