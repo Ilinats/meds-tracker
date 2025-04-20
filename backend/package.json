@@ -10,9 +10,9 @@
     "test": "jest",
     "test:auth": "jest auth",
     "test:medicines": "jest medicines",
+    "test:alerts": "jest medicineAlertController",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:db:push": "set DATABASE_URL=postgresql://postgres:Baza2024@localhost:5432/meds_tracker_test && prisma db push --schema=prisma/test/schema.prisma"
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
