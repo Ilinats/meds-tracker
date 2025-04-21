@@ -9,7 +9,7 @@ export const SchedulerModule = {
       await ScheduleChecker.checkMedicineSchedules();
     });
     
-    schedule.scheduleJob('0 0 * * *', async () => {
+    schedule.scheduleJob('* * * * *', async () => {
       await ScheduleChecker.checkLowStockAndExpiry();
     });
   }

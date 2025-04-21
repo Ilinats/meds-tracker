@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 // TODO: dobavi da ima ochence da moje da si vidi parolata
 // TODO: tokena sled izvestno vreme da se maha ot storage-a
 // TODO: svurji s registeraciq
+// TODO: sled login me vodi do ekran kojto kazva this screen doesnt exist
 
 const LoginScreen = () => {
   const [username, setUsername] = useState('');

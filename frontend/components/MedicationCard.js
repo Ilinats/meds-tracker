@@ -1,8 +1,46 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { medicineApi } from '../services/api';
 
-const MedicationCard = ({ medication, onPress }) => {
+const MedicationCard = ({ medication, onPress, onDelete }) => {
+//   useEffect(() => {
+//     // Check if quantity is 0 and delete if true
+//     if (medication.quantity <= 0) {
+//       Alert.alert(
+//         'Empty Medication',
+//         `${medication.name} has run out. It will be removed from your collection.`,
+//         [
+//           {
+//             text: 'OK',
+//             onPress: async () => {
+//                 try {
+//                     // console.log('Complete medication object:', medication);
+//                     // console.log('Attempting to delete medication with ID:', medication.id);
+                    
+//                     // // Try forcing a small delay before deletion (to rule out timing issues)
+//                     // await new Promise(resolve => setTimeout(resolve, 100));
+                    
+//                     // const result = await medicineApi.removeFromCollection(medication.id);
+//                     // console.log('Deletion API response:', result);
+                    
+//                     // Call onDelete to update UI
+//                     onDelete(medication.id);
+                    
+//                     Alert.alert('Success', 'Medication deleted successfully!');
+//                 } catch (error) {
+//                     console.error('Error response data:', error.response?.data);
+//                     console.error('Error response status:', error.response?.status);
+//                     console.error('Error message:', error.message);
+//                     Alert.alert('Error', 'Failed to delete medication. Please try again.');
+//                 }
+//             }
+//           }
+//         ]
+//       );
+//     }
+//   }, [medication.quantity]);
+
   const daysUntilExpiry = () => {
     const today = new Date();
     const expiryDate = new Date(medication.expiryDate);

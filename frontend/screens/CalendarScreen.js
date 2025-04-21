@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Alert, ScrollView } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { format, parseISO, isWithinInterval, isSameDay } from 'date-fns';
+import { format, parseISO, isWithinInterval, isSameDay, isToday } from 'date-fns';
 import { medicineApi } from '../services/api';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-// TODO: header otgore, za da ne e tolkova grozno
-// TODO: taken butona da e4 sin kato ne si vzel i posle kato si vzel da e zelen
-// TODO: da se sortirat po vreme
-// TODO: da mojesh da cukash na taken samo ako e v sushtiq den, ne da mojesh da cukash na vreme koeto e minalo ili da e v budeshteto
+//TODO: da pazq v async storage-a dali sym vzela medikationite, zashtotot sega kato izlqza ot stranicata to se refreshva
 
 const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [medications, setMedications] = useState([]);
   const [markedDates, setMarkedDates] = useState({});
+  const [takenMeds, setTakenMeds] = useState([]);
 
   const recordIntakeMutation = medicineApi.useRecordIntake();
   
@@ -27,10 +25,13 @@ const CalendarScreen = () => {
   const loadMedications = async () => {
     try {
       const data = await medicineApi.getUserMedicines();
-      console.log('Medications:', JSON.stringify(data, null, 2));
-      setMedications(Array.isArray(data) ? data : data.medicines || []);
       
-      updateMarkedDates(Array.isArray(data) ? data : data.medicines || []);
+      const medicationsArray = Array.isArray(data) ? data : data.medicines || [];
+      
+      setMedications(medicationsArray);
+      updateMarkedDates(medicationsArray);
+      
+      setTakenMeds([]);
     } catch (error) {
       console.error('Error loading medications:', error);
       Alert.alert('Error', 'Failed to load medications');
@@ -39,17 +40,21 @@ const CalendarScreen = () => {
   
   const updateMarkedDates = (meds) => {
     const marked = {};
+    
     meds.forEach(med => {
       const startDate = new Date(med.startDate);
       const endDate = new Date(med.endDate);
       
-      for (let date = new Date(startDate); date <= endDate; date.setDate(date.getDate() + 1)) {
-        const dateStr = date.toISOString().split('T')[0];
-        const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
-        
-        const isScheduled = med.schedules.some(schedule => 
-          schedule.repeatDays.includes(dayOfWeek)
-        );
+      let currentDate = new Date(startDate);
+      
+      while (currentDate <= endDate) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const dayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+        const isScheduled = med.schedules.some(schedule => {
+          const isDayScheduled = schedule.repeatDays.includes(dayOfWeek);
+          return isDayScheduled;
+        });
 
         if (isScheduled) {
           marked[dateStr] = {
@@ -58,13 +63,18 @@ const CalendarScreen = () => {
             selected: dateStr === selectedDate
           };
         }
+        
+        currentDate.setDate(currentDate.getDate() + 1);
       }
     });
     setMarkedDates(marked);
   };
   
   const getScheduledMedications = () => {
-    if (!medications || medications.length === 0) return [];
+    if (!medications || medications.length === 0) {
+      console.log('No medications available');
+      return [];
+    }
     
     const selectedDay = new Date(selectedDate);
     const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' });
@@ -73,33 +83,46 @@ const CalendarScreen = () => {
       const startDate = new Date(med.startDate);
       const endDate = new Date(med.endDate);
       
-      const isInDateRange = selectedDay >= startDate && selectedDay <= endDate;
+      const selectedDayNoTime = new Date(selectedDay);
+      selectedDayNoTime.setHours(0, 0, 0, 0);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
       
-      const isScheduledForDay = med.schedules.some(schedule => 
-        schedule.repeatDays.includes(dayOfWeek)
-      );
+      const isInDateRange = selectedDayNoTime >= startDate && selectedDayNoTime <= endDate;
+      const isScheduledForDay = med.schedules.some(schedule => {
+        const isScheduled = schedule.repeatDays.includes(dayOfWeek);
+        return isScheduled;
+      });
       
       return isInDateRange && isScheduledForDay;
     });
     
-    return medicationsForDay.flatMap(med => {
+    
+    const scheduledMeds = medicationsForDay.flatMap(med => {
       return med.schedules.flatMap(schedule => {
-        return schedule.timesOfDay.map(time => ({
-          id: `${med.id}-${time}`,
-          medicineName: med.name,
-          category: med.category,
-          unit: med.unit,
-          quantity: med.quantity,
-          expiryDate: med.expiryDate,
-          dosageAmount: schedule.dosageAmount,
-          prescription: med.prescription,
-          time: time,
-          scheduleId: schedule.id
-        }));
+        return schedule.timesOfDay.map(time => {
+          const medId = `${med.id}-${time}`;
+          
+          return {
+            id: medId,
+            medicineName: med.name,
+            category: med.category,
+            unit: med.unit,
+            quantity: med.quantity,
+            expiryDate: med.expiryDate,
+            dosageAmount: schedule.dosageAmount,
+            prescription: med.prescription,
+            time: time,
+            scheduleId: schedule.id,
+            isTaken: takenMeds.includes(medId)
+          };
+        });
       });
     }).sort((a, b) => {
       return a.time.localeCompare(b.time);
     });
+    
+    return scheduledMeds;
   };
   
   const handleRecordIntake = async (medicationSchedule) => {
@@ -115,8 +138,10 @@ const CalendarScreen = () => {
         data: { takenAt: new Date() }
       });
       
+      // Update local state to show button is pressed
+      setTakenMeds(prev => [...prev, medicationSchedule.id]);
+      
       Alert.alert('Success', 'Medication intake recorded');
-      loadMedications();
     } catch (error) {
       console.error('Error recording intake:', error);
       Alert.alert('Error', 'Failed to record medication intake');
@@ -143,11 +168,22 @@ const CalendarScreen = () => {
     return format(date, 'EEEE, MMMM d, yyyy');
   };
   
+  // Check if the selected date is today
+  const isCurrentDay = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+    
+    return today.getTime() === selected.getTime();
+  };
+  
   const renderScheduleItem = ({ item }) => {
     const daysUntilExpiry = Math.ceil((new Date(item.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
     const isLowStock = item.quantity <= 5;
     const isExpiringSoon = daysUntilExpiry <= 7;
-    console.log('Item:', item);
+    const canTakeMedication = isCurrentDay();
     
     return (
       <View style={styles.scheduleItem}>
@@ -174,8 +210,13 @@ const CalendarScreen = () => {
           )}
         </View>
         <TouchableOpacity
-          style={styles.takeButton}
+          style={[
+            styles.takeButton,
+            item.isTaken ? styles.takenButton : styles.notTakenButton,
+            !canTakeMedication && styles.disabledButton
+          ]}
           onPress={() => handleRecordIntake(item)}
+          disabled={!canTakeMedication || item.isTaken}
         >
           <Text style={styles.takeButtonText}>Taken</Text>
         </TouchableOpacity>
@@ -187,6 +228,10 @@ const CalendarScreen = () => {
   
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Medication Calendar</Text>
+      </View>
+      
       <Calendar
         current={selectedDate}
         onDayPress={onDayPress}
@@ -238,6 +283,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  header: {
+    padding: 20,
+    paddingTop: 50,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2d3748',
   },
   scheduleContainer: {
     flex: 1,
@@ -310,11 +372,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   takeButton: {
-    backgroundColor: '#38A169',
     padding: 8,
     borderRadius: 8,
     justifyContent: 'center',
     marginLeft: 8,
+    width: 60,
+    alignItems: 'center',
+  },
+  notTakenButton: {
+    backgroundColor: '#4299e1', // Blue when not taken
+  },
+  takenButton: {
+    backgroundColor: '#38A169', // Green when taken
+  },
+  disabledButton: {
+    backgroundColor: '#a0aec0', // Gray when disabled
+    opacity: 0.6,
   },
   takeButtonText: {
     color: 'white',
@@ -325,6 +398,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 40,
   },
   emptyText: {
     fontSize: 16,

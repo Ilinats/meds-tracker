@@ -34,6 +34,10 @@ const MedicationListScreen = ({ navigation }) => {
     }
   };
 
+  const handleDeleteMedication = (medicationId) => {
+    setMedications(prevMeds => prevMeds.filter(med => med.id !== medicationId));
+  };
+
   const renderEmptyList = () => {
     if (isLoading) {
       return (
@@ -68,6 +72,7 @@ const MedicationListScreen = ({ navigation }) => {
           <MedicationCard 
             medication={item} 
             onPress={() => navigation.navigate('MedicationDetail', { medicationId: item.id })}
+            onDelete={handleDeleteMedication}
           />
         )}
         contentContainerStyle={medications?.length === 0 ? { flex: 1 } : { paddingBottom: 100 }}

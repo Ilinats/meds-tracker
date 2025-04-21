@@ -94,17 +94,18 @@ export const authApi = {
           const response = await apiClient.post('/auth/login', { username, password });
           return response.data;
         } catch (error) {
+            alert('Login failed, please try again');
           if (error.response) {
             // Server responded with a status other than 2xx
-            console.error('Error response:', error.response);
+            console.log('Error response:', error.response);
             throw error.response.data;
           } else if (error.request) {
             // No response was received
-            console.error('Error request:', error.request);
+            console.log('Error request:', error.request);
             throw 'No response from server';
           } else {
             // General error (network error, etc.)
-            console.error('Error message:', error.message);
+            console.log('Error message:', error.message);
             throw error.message;
           }
         }
@@ -115,10 +116,36 @@ export const authApi = {
         const response = await apiClient.post('/auth/register', userData);
         return response.data;
       } catch (error) {
-        console.error('Registration failed:', error);
+        console.log('Registration failed:', error);
+        alert('Registration failed. Please try again.');
         throw error;
       }
     },
+
+    registerPushToken: async (pushToken: string) => {
+        try {
+          const response = await apiClient.put('/auth/pushToken', { pushToken });
+          return response.data;
+        } catch (error) {
+          console.error('Error registering push token:', error);
+          if (error.response) {
+            console.error('Error response:', error.response);
+            throw error.response.data;
+          } else if (error.request) {
+            console.error('Error request:', error.request);
+            throw 'No response from server';
+          } else {
+            console.error('Error message:', error.message);
+            throw error.message;
+          }
+        }
+      },
+      
+      useRegisterPushToken() {
+        return useMutation({
+          mutationFn: (pushToken: string) => authApi.registerPushToken(pushToken)
+        });
+      },
   
     useLogin() {
       const queryClient = useQueryClient();

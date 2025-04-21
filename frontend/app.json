@@ -18,15 +18,15 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.yourcompany.medstracker",
-        "permissions": [
-            "NOTIFICATIONS",
-            "VIBRATE",
-            "READ_EXTERNAL_STORAGE",
-            "WRITE_EXTERNAL_STORAGE",
-            "ACCESS_FINE_LOCATION",
-            "ACCESS_COARSE_LOCATION",
-            "ACCESS_BACKGROUND_LOCATION"
-        ]
+      "permissions": [
+        "NOTIFICATIONS",
+        "VIBRATE",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -54,6 +54,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "56fefc22-74f4-4d49-8266-1cfad06d2a15"
+      }
+    },
+    "owner": "ilina.tsan"
   }
 }
