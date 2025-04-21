@@ -138,7 +138,6 @@ const CalendarScreen = () => {
         data: { takenAt: new Date() }
       });
       
-      // Update local state to show button is pressed
       setTakenMeds(prev => [...prev, medicationSchedule.id]);
       
       Alert.alert('Success', 'Medication intake recorded');
@@ -168,7 +167,6 @@ const CalendarScreen = () => {
     return format(date, 'EEEE, MMMM d, yyyy');
   };
   
-  // Check if the selected date is today
   const isCurrentDay = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -186,6 +184,7 @@ const CalendarScreen = () => {
     const canTakeMedication = isCurrentDay();
     
     return (
+        
       <View style={styles.scheduleItem}>
         <View style={styles.timeContainer}>
           <Text style={styles.timeText}>{formatTime(item.time)}</Text>
@@ -283,11 +282,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+    fontFamily: 'Comfortaa',
   },
   header: {
     padding: 20,
-    paddingTop: 50,
-    backgroundColor: 'white',
+    paddingTop: 40,
+    backgroundColor: '#f8f9fa',
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
     shadowColor: '#000',
@@ -295,16 +295,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
+    fontFamily: 'Comfortaa',
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#2d3748',
+    fontFamily: 'Comfortaa',
   },
   scheduleContainer: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f7fafc',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     marginTop: -10,
@@ -319,6 +321,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
     color: '#333',
+    fontFamily: 'Comfortaa',
   },
   scheduleList: {
     paddingBottom: 20,
@@ -327,10 +330,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 16,
     padding: 12,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     borderLeftWidth: 4,
     borderLeftColor: '#5C6BC0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
   },
   timeContainer: {
     width: 80,
@@ -340,6 +348,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#3F51B5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+    fontFamily: 'Comfortaa',
   },
   medicineDetails: {
     flex: 1,
@@ -350,26 +364,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
+    fontFamily: 'Comfortaa',
   },
   dosageText: {
     fontSize: 14,
     color: '#666',
     marginBottom: 4,
+    fontFamily: 'Comfortaa',
   },
   prescriptionText: {
     fontSize: 12,
     color: '#888',
     fontStyle: 'italic',
+    fontFamily: 'Comfortaa',
   },
   warningContainer: {
     backgroundColor: '#FFF5F5',
     padding: 4,
     borderRadius: 4,
     marginTop: 4,
+    fontFamily: 'Comfortaa',
   },
   warningText: {
     color: '#E53E3E',
     fontSize: 12,
+    fontFamily: 'Comfortaa',
   },
   takeButton: {
     padding: 8,
@@ -380,19 +399,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   notTakenButton: {
-    backgroundColor: '#4299e1', // Blue when not taken
+    backgroundColor: '#4299e1',
   },
   takenButton: {
-    backgroundColor: '#38A169', // Green when taken
+    backgroundColor: '#38A169',
   },
   disabledButton: {
-    backgroundColor: '#a0aec0', // Gray when disabled
+    backgroundColor: '#a0aec0',
     opacity: 0.6,
   },
   takeButtonText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 12,
+    fontFamily: 'Comfortaa',
   },
   emptySchedule: {
     flex: 1,
@@ -404,6 +424,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
     textAlign: 'center',
+    fontFamily: 'Comfortaa',
   },
 });
 

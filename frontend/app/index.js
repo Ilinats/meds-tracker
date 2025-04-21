@@ -77,6 +77,7 @@ export default function Index() {
 
   useEffect(() => {
     const checkAuth = async () => {
+        // AsyncStorage.clear();
       const token = await AsyncStorage.getItem('userToken');
       console.log('Token:', token);
       

@@ -11,6 +11,7 @@ import {
   Alert,
   FlatList,
   ActivityIndicator,
+  ImageBackground
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -33,8 +34,16 @@ const CATEGORIES = [
   'Other',
 ];
 
-//TODO: Proverka dali dnite sa validni i dali time of day e validno vreme
-//TODO: ne moga da scrollvam na kategoriqta, tova trqbva da se opravi
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+const isValidTime = (time) => {
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  return timeRegex.test(time);
+};
+
+const isValidDay = (day) => {
+  return DAYS.includes(day);
+};
 
 const AddMedicationScreen = ({ navigation }) => {
   const [medicationName, setMedicationName] = useState('');
@@ -51,8 +60,6 @@ const AddMedicationScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPresetId, setSelectedPresetId] = useState(null);
   const [showCustomForm, setShowCustomForm] = useState(false);
-  const [customCategory, setCustomCategory] = useState('');
-  const [showCustomCategoryInput, setShowCustomCategoryInput] = useState(false);
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
   const [schedule, setSchedule] = useState({
@@ -95,6 +102,20 @@ const AddMedicationScreen = ({ navigation }) => {
   };
 
   const handleSaveMedication = async () => {
+    // Validate times
+    const invalidTimes = schedule.timesOfDay.filter(time => !isValidTime(time.trim()));
+    if (invalidTimes.length > 0) {
+      Alert.alert('Error', `Invalid time format: ${invalidTimes.join(', ')}. Please use 24-hour format (HH:MM)`);
+      return;
+    }
+
+    // Validate days
+    const invalidDays = schedule.repeatDays.filter(day => !isValidDay(day.trim()));
+    if (invalidDays.length > 0) {
+      Alert.alert('Error', `Invalid day: ${invalidDays.join(', ')}. Please select valid days.`);
+      return;
+    }
+
     if (!medicationName || !quantity || !startDate || !endDate || !selectedCategory || !dosagePerDay) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
@@ -159,7 +180,11 @@ const AddMedicationScreen = ({ navigation }) => {
   };
 
   const renderPresetList = () => (
-    <View style={styles.container}>
+    <ImageBackground 
+      source={require('../assets/images/background8.jpg')}
+      style={styles.container}
+      resizeMode="cover"
+    >
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -200,418 +225,456 @@ const AddMedicationScreen = ({ navigation }) => {
         <Ionicons name="add-circle-outline" size={24} color="#4299e1" />
         <Text style={styles.customButtonText}>Add Custom Medication</Text>
       </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 
   const renderForm = () => (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => {
-            setShowCustomForm(false);
-            setMedicationName('');
-            setQuantity('');
-            setSelectedCategory('');
-            setSelectedPresetId(null);
-          }}
-        >
-          <Ionicons name="arrow-back" size={28} color="#4a5568" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Medication</Text>
-      </View>
-      <ScrollView 
-        style={styles.formContainer}
-        contentContainerStyle={styles.formContentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.label}>Medication Name*</Text>
-        <TextInput
-          style={styles.input}
-          value={medicationName}
-          onChangeText={setMedicationName}
-          placeholder="Enter medication name"
-        />
-
-        <Text style={styles.label}>Quantity*</Text>
-        <TextInput
-          style={styles.input}
-          value={quantity}
-          onChangeText={setQuantity}
-          placeholder="Enter quantity"
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Start Date*</Text>
-        <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={() => setShowStartDatePicker(true)}
-        >
-          <Text>{startDate.toLocaleDateString()}</Text>
-        </TouchableOpacity>
-
-        {showStartDatePicker && (
-          <DateTimePicker
-            value={startDate}
-            mode="date"
-            display="default"
-            onChange={handleStartDateChange}
-          />
-        )}
-
-        <Text style={styles.label}>End Date*</Text>
-        <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={() => setShowEndDatePicker(true)}
-        >
-          <Text>{endDate.toLocaleDateString()}</Text>
-        </TouchableOpacity>
-
-        {showEndDatePicker && (
-          <DateTimePicker
-            value={endDate}
-            mode="date"
-            display="default"
-            onChange={handleEndDateChange}
-          />
-        )}
-
-        <Text style={styles.label}>Expiry Date*</Text>
-        <TouchableOpacity
-          style={styles.datePickerButton}
-          onPress={() => setShowExpirationDatePicker(true)}
-        >
-          <Text>{expirationDate.toLocaleDateString()}</Text>
-        </TouchableOpacity>
-
-        {showExpirationDatePicker && (
-          <DateTimePicker
-            value={expirationDate}
-            mode="date"
-            display="default"
-            onChange={handleExpirationDateChange}
-          />
-        )}
-
-        <Text style={styles.label}>Category*</Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={() => setShowCategoryPicker(!showCategoryPicker)}
-        >
-          <Text>{selectedCategory || 'Select a category'}</Text>
-        </TouchableOpacity>
-
-        {showCategoryPicker && (
-          <View style={styles.categoryPicker}>
-            <ScrollView style={{ maxHeight: 200 }}>
-              {CATEGORIES.map((category) => (
-                <TouchableOpacity
-                  key={category}
-                  style={styles.categoryOption}
-                  onPress={() => {
-                    setSelectedCategory(category);
-                    setShowCategoryPicker(false);
-                  }}
-                >
-                  <Text style={styles.categoryText}>{category}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-
-        <Text style={styles.label}>Prescription (Optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={prescription}
-          onChangeText={setPrescription}
-          placeholder="Optional: Add prescription details"
-        />
-
-        <Text style={styles.label}>Dosage per Day*</Text>
-        <TextInput
-          style={styles.input}
-          value={String(dosagePerDay)}
-          onChangeText={(text) => setDosagePerDay(Number(text))}
-          placeholder="How many times per day?"
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Schedule</Text>
-        <View style={styles.scheduleContainer}>
-          <Text style={styles.scheduleText}>Times of Day: {schedule.timesOfDay.join(', ')}</Text>
-          <Text style={styles.scheduleText}>Repeat Days: {schedule.repeatDays.join(', ')}</Text>
-          <Text style={styles.scheduleText}>Dosage Amount: {schedule.dosageAmount}</Text>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => setIsScheduleModalVisible(true)}
+    <ImageBackground 
+      source={require('../assets/images/background8.jpg')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView style={styles.container} behavior="padding">
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => {
+              setShowCustomForm(false);
+              setMedicationName('');
+              setQuantity('');
+              setSelectedCategory('');
+              setSelectedPresetId(null);
+            }}
           >
-            <Text style={styles.buttonText}>Edit</Text>
+            <Ionicons name="arrow-back" size={28} color="#4a5568" />
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>Add Medication</Text>
         </View>
-
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={handleSaveMedication}
+        <ScrollView 
+          style={styles.formContainer}
+          contentContainerStyle={styles.formContentContainer}
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.saveButtonText}>Save Medication</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <Text style={styles.label}>Medication Name*</Text>
+          <TextInput
+            style={styles.input}
+            value={medicationName}
+            onChangeText={setMedicationName}
+            placeholder="Enter medication name"
+          />
 
-      <Modal
-        visible={isScheduleModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setIsScheduleModalVisible(false)}
-      >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Edit Schedule</Text>
+          <Text style={styles.label}>Quantity*</Text>
+          <TextInput
+            style={styles.input}
+            value={quantity}
+            onChangeText={setQuantity}
+            placeholder="Enter quantity"
+            keyboardType="numeric"
+          />
 
-            <Text style={styles.modalLabel}>Times of Day (comma separated)</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={schedule.timesOfDay.join(', ')}
-              onChangeText={(text) => setSchedule(prev => ({ ...prev, timesOfDay: text.split(',').map(item => item.trim()) }))}
-              placeholder="e.g., 8:00, 14:00"
+          <Text style={styles.label}>Start Date*</Text>
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => setShowStartDatePicker(true)}
+          >
+            <Text>{startDate.toLocaleDateString()}</Text>
+          </TouchableOpacity>
+
+          {showStartDatePicker && (
+            <DateTimePicker
+              value={startDate}
+              mode="date"
+              display="default"
+              onChange={handleStartDateChange}
             />
+          )}
 
-            <Text style={styles.modalLabel}>Repeat Days (comma separated)</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={schedule.repeatDays.join(', ')}
-              onChangeText={(text) => setSchedule(prev => ({ ...prev, repeatDays: text.split(',').map(item => item.trim()) }))}
-              placeholder="e.g., Monday, Wednesday"
+          <Text style={styles.label}>End Date*</Text>
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => setShowEndDatePicker(true)}
+          >
+            <Text>{endDate.toLocaleDateString()}</Text>
+          </TouchableOpacity>
+
+          {showEndDatePicker && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display="default"
+              onChange={handleEndDateChange}
             />
+          )}
 
-            <Text style={styles.modalLabel}>Dosage Amount</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={String(schedule.dosageAmount)}
-              onChangeText={(text) => setSchedule(prev => ({ ...prev, dosageAmount: Number(text) }))}
-              placeholder="e.g., 1"
-              keyboardType="numeric"
+          <Text style={styles.label}>Expiry Date*</Text>
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => setShowExpirationDatePicker(true)}
+          >
+            <Text>{expirationDate.toLocaleDateString()}</Text>
+          </TouchableOpacity>
+
+          {showExpirationDatePicker && (
+            <DateTimePicker
+              value={expirationDate}
+              mode="date"
+              display="default"
+              onChange={handleExpirationDateChange}
             />
+          )}
 
-            <View style={styles.modalButtonContainer}>
-              <TouchableOpacity 
-                style={styles.modalButton} 
-                onPress={() => setIsScheduleModalVisible(false)}
+          <Text style={styles.label}>Category*</Text>
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setShowCategoryPicker(!showCategoryPicker)}
+          >
+            <Text>{selectedCategory || 'Select a category'}</Text>
+          </TouchableOpacity>
+
+          {showCategoryPicker && (
+            <View style={styles.categoryPickerContainer}>
+              <ScrollView 
+                style={styles.categoryPickerScroll}
+                nestedScrollEnabled={true}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.modalButton, styles.cancelButton]} 
-                onPress={() => setIsScheduleModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
+                {CATEGORIES.map((category) => (
+                  <TouchableOpacity
+                    key={category}
+                    style={styles.categoryOption}
+                    onPress={() => {
+                      setSelectedCategory(category);
+                      setShowCategoryPicker(false);
+                    }}
+                  >
+                    <Text style={styles.categoryText}>{category}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          <Text style={styles.label}>Prescription (Optional)</Text>
+          <TextInput
+            style={styles.input}
+            value={prescription}
+            onChangeText={setPrescription}
+            placeholder="Optional: Add prescription details"
+          />
+
+          <Text style={styles.label}>Dosage per Day*</Text>
+          <TextInput
+            style={styles.input}
+            value={String(dosagePerDay)}
+            onChangeText={(text) => setDosagePerDay(Number(text))}
+            placeholder="How many times per day?"
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Schedule</Text>
+          <View style={styles.scheduleContainer}>
+            <Text style={styles.scheduleText}>Times of Day: {schedule.timesOfDay.join(', ')}</Text>
+            <Text style={styles.scheduleText}>Repeat Days: {schedule.repeatDays.join(', ')}</Text>
+            <Text style={styles.scheduleText}>Dosage Amount: {schedule.dosageAmount}</Text>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => setIsScheduleModalVisible(true)}
+            >
+              <Text style={styles.buttonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveMedication}
+          >
+            <Text style={styles.saveButtonText}>Save Medication</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        <Modal
+          visible={isScheduleModalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setIsScheduleModalVisible(false)}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Edit Schedule</Text>
+
+              <Text style={styles.modalLabel}>Times of Day (comma separated)</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={schedule.timesOfDay.join(', ')}
+                onChangeText={(text) => setSchedule(prev => ({ ...prev, timesOfDay: text.split(',').map(item => item.trim()) }))}
+                placeholder="e.g., 8:00, 14:00"
+              />
+
+              <Text style={styles.modalLabel}>Repeat Days (comma separated)</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={schedule.repeatDays.join(', ')}
+                onChangeText={(text) => setSchedule(prev => ({ ...prev, repeatDays: text.split(',').map(item => item.trim()) }))}
+                placeholder="e.g., Monday, Wednesday"
+              />
+
+              <Text style={styles.modalLabel}>Dosage Amount</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={String(schedule.dosageAmount)}
+                onChangeText={(text) => setSchedule(prev => ({ ...prev, dosageAmount: Number(text) }))}
+                placeholder="e.g., 1"
+                keyboardType="numeric"
+              />
+
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity 
+                  style={styles.modalButton} 
+                  onPress={() => setIsScheduleModalVisible(false)}
+                >
+                  <Text style={styles.modalButtonText}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.modalButton, styles.cancelButton]} 
+                  onPress={() => setIsScheduleModalVisible(false)}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </KeyboardAvoidingView>
+        </Modal>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 
   return showCustomForm ? renderForm() : renderPresetList();
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-  },
-  searchContainer: {
-    marginBottom: 16,
-  },
-  searchInput: {
-    height: 60,
-    fontSize: 16,
-    marginTop: 30,
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 3,
-    borderColor: '#4299e1',
-  },
-  presetItem: {
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  presetName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#2d3748',
-  },
-  presetCategory: {
-    fontSize: 14,
-    color: '#718096',
-  },
-  customButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 8,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#4299e1',
-    borderStyle: 'dashed',
-  },
-  customButtonText: {
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#4299e1',
-  },
-  loader: {
-    marginTop: 20,
-  },
-  errorText: {
-    textAlign: 'center',
-    color: '#e53e3e',
-    marginTop: 20,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#718096',
-    marginTop: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-    paddingVertical: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingHorizontal: 16,
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2d3748',
-    marginLeft: 8,
-  },
-  formContainer: {
-    flex: 1,
-  },
-  formContentContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 40,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2d3748',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 16,
-  },
-  datePickerButton: {
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 16,
-  },
-  categoryPicker: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 16,
-  },
-  categoryOption: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  categoryText: {
-    fontSize: 16,
-    color: '#2d3748',
-  },
-  scheduleContainer: {
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 16,
-  },
-  scheduleText: {
-    fontSize: 14,
-    color: '#4a5568',
-    marginBottom: 8,
-  },
-  editButton: {
-    backgroundColor: '#4299e1',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  saveButton: {
-    backgroundColor: '#4299e1',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  saveButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 8,
-    width: '90%',
-    maxWidth: 400,
-  },
+    container: {
+        flex: 1,
+        fontFamily: 'Comfortaa',
+    },
+    searchContainer: {
+        marginBottom: 16,
+        marginTop: 20,
+        paddingHorizontal: 16,
+        paddingBottom: 16,
+    },
+    searchInput: {
+        height: 60,
+        fontSize: 16,
+        marginTop: 30,
+        backgroundColor: 'white',
+        padding: 12,
+        borderRadius: 10,
+        borderWidth: 3,
+        borderColor: '#4299e1',
+        fontFamily: 'Comfortaa',
+    },
+    presetItem: {
+        backgroundColor: 'white',
+        padding: 16,
+        borderRadius: 8,
+        marginBottom: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.25,
+        shadowRadius: 1.84,
+        elevation: 2,
+        marginHorizontal: 16,
+    },
+    presetName: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#2d3748',
+        fontFamily: 'Comfortaa',
+        flex: 1,
+    },
+    presetCategory: {
+        fontSize: 12,
+        color: '#718096',
+        fontFamily: 'Comfortaa',
+        marginLeft: 8,
+        maxWidth: '60%',
+        textAlign: 'right',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+    },
+    customButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'white',
+        padding: 16,
+        borderRadius: 8,
+        marginTop: 16,
+        borderWidth: 1,
+        borderColor: '#4299e1',
+        borderStyle: 'dashed',
+        marginHorizontal: 16,
+        marginBottom: 16,
+    },
+    customButtonText: {
+        marginLeft: 8,
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#4299e1',
+        fontFamily: 'Comfortaa',
+    },
+    loader: {
+        marginTop: 20,
+    },
+    errorText: {
+        textAlign: 'center',
+        color: '#e53e3e',
+        marginTop: 20,
+    },
+    emptyText: {
+        textAlign: 'center',
+        color: '#718096',
+        marginTop: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        backgroundColor: 'white',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+        paddingHorizontal: 16,
+        paddingTop: 40,
+        fontFamily: 'Comfortaa',
+    },
+    backButton: {
+        padding: 8,
+        marginRight: 8,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: '600',
+        color: '#2d3748',
+        marginLeft: 8,
+        fontFamily: 'Comfortaa',
+    },
+    formContainer: {
+        flex: 1,
+        marginTop: 20,
+    },
+    formContentContainer: {
+        paddingHorizontal: 16,
+        paddingBottom: 40,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#2d3748',
+        marginBottom: 8,
+        fontFamily: 'Comfortaa',
+    },
+    input: {
+        backgroundColor: 'white',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginBottom: 16,
+        fontFamily: 'Comfortaa',
+    },
+    datePickerButton: {
+        backgroundColor: 'white',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginBottom: 16,
+    },
+    categoryPickerContainer: {
+        maxHeight: 200,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginBottom: 16,
+    },
+    categoryPickerScroll: {
+        maxHeight: 200,
+    },
+    categoryOption: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+        fontFamily: 'Comfortaa',
+    },
+    categoryText: {
+        fontSize: 8,
+        color: '#2d3748',
+        fontFamily: 'Comfortaa',
+    },
+    scheduleContainer: {
+        backgroundColor: 'white',
+        padding: 16,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginBottom: 16,
+    },
+    scheduleText: {
+        fontSize: 14,
+        color: '#4a5568',
+        marginBottom: 8,
+        fontFamily: 'Comfortaa',
+    },
+    editButton: {
+        backgroundColor: '#4299e1',
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 8,
+    },
+    buttonText: {
+        color: 'white',
+        fontWeight: '600',
+        fontFamily: 'Comfortaa',
+    },
+    saveButton: {
+        backgroundColor: '#4299e1',
+        padding: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 24,
+    },
+    saveButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+        fontFamily: 'Comfortaa',
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#2d3748',
     marginBottom: 16,
+    fontFamily: 'Comfortaa',
   },
   modalLabel: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#2d3748',
     marginBottom: 8,
+    fontFamily: 'Comfortaa',
   },
   modalInput: {
     backgroundColor: 'white',
@@ -620,6 +683,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     marginBottom: 16,
+    fontFamily: 'Comfortaa',
   },
   modalButtonContainer: {
     flexDirection: 'row',
@@ -639,7 +703,8 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: 'white',
     textAlign: 'center',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontFamily: 'Comfortaa',
   },
 });
 

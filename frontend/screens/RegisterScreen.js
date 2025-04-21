@@ -28,7 +28,6 @@ const RegisterScreen = () => {
   const handleRegister = async () => {
     setError('');
     
-    // Basic validation
     if (!username || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;

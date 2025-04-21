@@ -120,9 +120,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '600',
     marginBottom: 30,
     color: '#4a5568',
+    fontFamily: 'Comfortaa',
   },
   formContainer: {
     width: '100%',
@@ -132,6 +133,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: '#4a5568',
     fontWeight: '500',
+    fontFamily: 'Comfortaa',
   },
   input: {
     backgroundColor: 'white',
@@ -141,6 +143,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 20,
     fontSize: 16,
+    fontFamily: 'Comfortaa',
   },
   button: {
     backgroundColor: '#4299e1',
@@ -152,7 +155,8 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontFamily: 'Comfortaa',
   },
   forgotPassword: {
     alignItems: 'center',
@@ -161,11 +165,13 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: '#4299e1',
     fontSize: 14,
+    fontFamily: 'Comfortaa',
   },
   errorText: {
     color: '#e53e3e',
     marginBottom: 10,
     textAlign: 'center',
+    fontFamily: 'Comfortaa',
   },
 });
 

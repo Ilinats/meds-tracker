@@ -4,7 +4,8 @@ import {
   Text, 
   FlatList, 
   StyleSheet,
-  ActivityIndicator 
+  ActivityIndicator,
+  ImageBackground
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { medicineApi } from '../services/api.ts';
@@ -60,7 +61,11 @@ const MedicationListScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <ImageBackground 
+      source={require('../assets/images/background8.jpg')}
+      style={styles.container}
+      resizeMode="cover"
+    >
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Medications</Text>
       </View>
@@ -80,26 +85,27 @@ const MedicationListScreen = ({ navigation }) => {
         refreshing={isLoading}
         onRefresh={loadMedications}
       />
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
   header: {
     padding: 20,
-    paddingTop: 60,
-    backgroundColor: 'white',
+    paddingTop: 45,
+    backgroundColor: '#f7fafc',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#cbd5e0',
+    fontFamily: 'Comfortaa',
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
     color: '#2d3748',
+    fontFamily: 'Comfortaa',
+    fontWeight: '600'
   },
   emptyContainer: {
     flex: 1,
@@ -109,20 +115,22 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#4a5568',
     marginTop: 20,
+    fontFamily: 'Comfortaa',
   },
   emptySubText: {
     fontSize: 14,
     color: '#718096',
     textAlign: 'center',
     marginTop: 10,
+    fontFamily: 'Comfortaa',
   },
   loadingText: {
     fontSize: 16,
     color: '#4a5568',
     marginTop: 20,
+    fontFamily: 'Comfortaa',
   },
   addButton: {
     position: 'absolute',

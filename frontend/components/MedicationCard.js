@@ -151,37 +151,44 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    fontFamily: 'Comfortaa',
   },
   name: {
     fontSize: 18,
     fontWeight: '600',
     color: '#2d3748',
+    fontFamily: 'Comfortaa',
   },
   quantityContainer: {
     backgroundColor: '#EBF8FF',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    fontFamily: 'Comfortaa',
   },
   quantity: {
     fontSize: 14,
     color: '#3182CE',
     fontWeight: '500',
+    fontFamily: 'Comfortaa',
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+    fontFamily: 'Comfortaa',
   },
   infoText: {
     fontSize: 14,
     color: '#4a5568',
     marginLeft: 8,
+    fontFamily: 'Comfortaa',
   },
   expiryText: {
     fontSize: 14,
     color: '#4a5568',
     marginLeft: 8,
+    fontFamily: 'Comfortaa',
   },
   warningContainer: {
     marginTop: 12,
@@ -193,11 +200,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 4,
+    fontFamily: 'Comfortaa',
   },
   warningText: {
     fontSize: 12,
     color: '#E53E3E',
     marginLeft: 8,
+    fontFamily: 'Comfortaa',
   },
 });
 

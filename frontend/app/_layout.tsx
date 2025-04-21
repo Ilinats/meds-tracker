@@ -19,6 +19,7 @@ export default function Layout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    Comfortaa: require('../assets/fonts/Comfortaa-VariableFont_wght.ttf')
   });
 
   const [isLoading, setIsLoading] = useState(true);

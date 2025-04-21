@@ -2,11 +2,6 @@ import axios from 'axios';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-// -----------------------
-// Types
-// -----------------------
-
 interface User {
   email: string;
   password: string;
@@ -37,9 +32,6 @@ interface QueryParams {
   page?: number;
   limit?: number;
 }
-// -----------------------
-// Query Keys
-// -----------------------
 
 export const queryKeys = {
   presetMedicines: 'presetMedicines',
@@ -47,10 +39,6 @@ export const queryKeys = {
   expiringMedicines: 'expiringMedicines',
   lowStockMedicines: 'lowStockMedicines',
 };
-
-// -----------------------
-// API Setup
-// -----------------------
 
 const API_URL = 'http://157.245.21.183:80/api';
 console.log(API_URL)
@@ -71,22 +59,16 @@ apiClient.interceptors.request.use(
     (error) => Promise.reject(error)
   );
   
-  // Auto logout on 401
   apiClient.interceptors.response.use(
     response => response,
     async (error) => {
       if (error.response?.status === 401) {
         await AsyncStorage.removeItem('userToken');
         await AsyncStorage.removeItem('userData');
-        // Optional: Redirect to login screen
       }
       return Promise.reject(error);
     }
   );
-
-// -----------------------
-// Auth API
-// -----------------------
 
 export const authApi = {
     login: async (username: string, password: string) => {
@@ -96,15 +78,12 @@ export const authApi = {
         } catch (error) {
             alert('Login failed, please try again');
           if (error.response) {
-            // Server responded with a status other than 2xx
             console.log('Error response:', error.response);
             throw error.response.data;
           } else if (error.request) {
-            // No response was received
             console.log('Error request:', error.request);
             throw 'No response from server';
           } else {
-            // General error (network error, etc.)
             console.log('Error message:', error.message);
             throw error.message;
           }
@@ -162,10 +141,6 @@ export const authApi = {
     }
   };
 
-// -----------------------
-// Medicine API
-// -----------------------
-
 export const medicineApi = {
   getPresetMedicines: async (params?: QueryParams) => {
     const response = await apiClient.get('/medicines/presets', { params });
@@ -181,15 +156,12 @@ export const medicineApi = {
     catch (error) {
         console.error('Error fetching user medicines:', error);
         if (error.response) {
-            // Server responded with a status other than 2xx
             console.error('Error response:', error.response);
             throw error.response.data;
         } else if (error.request) {
-            // No response was received
             console.error('Error request:', error.request);
             throw 'No response from server';
         } else {
-            // General error (network error, etc.)
             console.error('Error message:', error.message);
             throw error.message;
         }
@@ -203,12 +175,10 @@ export const medicineApi = {
     } catch (error) {
       console.error('Error adding medicine to collection:', error);
       if (error.response) {
-        // Server responded with a status other than 2xx
         console.error('Error response:', error.response);
         throw error.response.data;
       }
         if (error.request) {
-            // No response was received
             console.error('Error request:', error.request);
             throw 'No response from server';
         }
@@ -240,10 +210,6 @@ export const medicineApi = {
     const response = await apiClient.get('/low-stock');
     return response.data.data;
   },
-
-  // -----------------------
-  // React Query Hooks
-  // -----------------------
 
   usePresetMedicines(params?: QueryParams) {
     return useQuery({
