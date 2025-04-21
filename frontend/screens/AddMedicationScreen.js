@@ -18,6 +18,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMedications } from '../context/MedicationContext';
 import { medicineApi } from '../services/api';
 
+//TODO: opravii dezajna na schedule conteinera
+
 const UNITS = ['PILLS', 'ML', 'MG', 'G', 'TABLET', 'CAPSULE', 'DROP', 'TEASPOON', 'TABLESPOON', 'PATCH'];
 
 const CATEGORIES = [
@@ -392,57 +394,57 @@ const AddMedicationScreen = ({ navigation }) => {
         </ScrollView>
 
         <Modal
-          visible={isScheduleModalVisible}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setIsScheduleModalVisible(false)}
-        >
-          <View style={styles.modalBackground}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Edit Schedule</Text>
+            visible={isScheduleModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setIsScheduleModalVisible(false)}
+            >
+            <View style={styles.modalBackground}>
+                <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Edit Schedule</Text>
 
-              <Text style={styles.modalLabel}>Times of Day (comma separated)</Text>
-              <TextInput
-                style={styles.modalInput}
-                value={schedule.timesOfDay.join(', ')}
-                onChangeText={(text) => setSchedule(prev => ({ ...prev, timesOfDay: text.split(',').map(item => item.trim()) }))}
-                placeholder="e.g., 8:00, 14:00"
-              />
+                <Text style={styles.modalLabel}>Times of Day (comma separated)</Text>
+                <TextInput
+                    style={styles.modalInput}
+                    value={schedule.timesOfDay.join(', ')}
+                    onChangeText={(text) => setSchedule(prev => ({ ...prev, timesOfDay: text.split(',').map(item => item.trim()) }))}
+                    placeholder="e.g., 8:00, 14:00"
+                />
 
-              <Text style={styles.modalLabel}>Repeat Days (comma separated)</Text>
-              <TextInput
-                style={styles.modalInput}
-                value={schedule.repeatDays.join(', ')}
-                onChangeText={(text) => setSchedule(prev => ({ ...prev, repeatDays: text.split(',').map(item => item.trim()) }))}
-                placeholder="e.g., Monday, Wednesday"
-              />
+                <Text style={styles.modalLabel}>Repeat Days (comma separated)</Text>
+                <TextInput
+                    style={styles.modalInput}
+                    value={schedule.repeatDays.join(', ')}
+                    onChangeText={(text) => setSchedule(prev => ({ ...prev, repeatDays: text.split(',').map(item => item.trim()) }))}
+                    placeholder="e.g., Monday, Wednesday"
+                />
 
-              <Text style={styles.modalLabel}>Dosage Amount</Text>
-              <TextInput
-                style={styles.modalInput}
-                value={String(schedule.dosageAmount)}
-                onChangeText={(text) => setSchedule(prev => ({ ...prev, dosageAmount: Number(text) }))}
-                placeholder="e.g., 1"
-                keyboardType="numeric"
-              />
+                <Text style={styles.modalLabel}>Dosage Amount</Text>
+                <TextInput
+                    style={styles.modalInput}
+                    value={String(schedule.dosageAmount)}
+                    onChangeText={(text) => setSchedule(prev => ({ ...prev, dosageAmount: Number(text) }))}
+                    placeholder="e.g., 1"
+                    keyboardType="numeric"
+                />
 
-              <View style={styles.modalButtonContainer}>
-                <TouchableOpacity 
-                  style={styles.modalButton} 
-                  onPress={() => setIsScheduleModalVisible(false)}
-                >
-                  <Text style={styles.modalButtonText}>Save</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.modalButton, styles.cancelButton]} 
-                  onPress={() => setIsScheduleModalVisible(false)}
-                >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
+                <View style={styles.modalButtonContainer}>
+                    <TouchableOpacity 
+                    style={[styles.modalButton, styles.cancelButton]} 
+                    onPress={() => setIsScheduleModalVisible(false)}
+                    >
+                    <Text style={[styles.modalButtonText, {color: '#4a5568'}]}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                    style={styles.modalButton} 
+                    onPress={() => setIsScheduleModalVisible(false)}
+                    >
+                    <Text style={styles.modalButtonText}>Save</Text>
+                    </TouchableOpacity>
+                </View>
+                </View>
             </View>
-          </View>
-        </Modal>
+            </Modal>
       </KeyboardAvoidingView>
     </ImageBackground>
   );
@@ -613,7 +615,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Comfortaa',
     },
     categoryText: {
-        fontSize: 8,
+        fontSize: 13,
         color: '#2d3748',
         fontFamily: 'Comfortaa',
     },
@@ -661,51 +663,71 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
+        padding: 20,
     },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#2d3748',
-    marginBottom: 16,
-    fontFamily: 'Comfortaa',
-  },
-  modalLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2d3748',
-    marginBottom: 8,
-    fontFamily: 'Comfortaa',
-  },
-  modalInput: {
-    backgroundColor: 'white',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 16,
-    fontFamily: 'Comfortaa',
-  },
-  modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  modalButton: {
-    backgroundColor: '#4299e1',
-    padding: 12,
-    borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 8,
-  },
-  cancelButton: {
-    backgroundColor: '#e53e3e',
-  },
-  modalButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: '600',
-    fontFamily: 'Comfortaa',
-  },
+    modalContainer: {
+        backgroundColor: 'white',
+        width: '100%',
+        borderRadius: 16,
+        padding: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#2d3748',
+        marginBottom: 20,
+        fontFamily: 'Comfortaa',
+        textAlign: 'center',
+    },
+    modalLabel: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#4a5568',
+        marginBottom: 8,
+        fontFamily: 'Comfortaa',
+    },
+    modalInput: {
+        backgroundColor: '#f7fafc',
+        padding: 14,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginBottom: 20,
+        fontFamily: 'Comfortaa',
+        fontSize: 15,
+    },
+    modalButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+    },
+    modalButton: {
+        backgroundColor: '#4299e1',
+        padding: 14,
+        borderRadius: 10,
+        flex: 1,
+        marginHorizontal: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    cancelButton: {
+        backgroundColor: '#cbd5e0',
+    },
+    modalButtonText: {
+        color: 'white',
+        textAlign: 'center',
+        fontWeight: '600',
+        fontFamily: 'Comfortaa',
+        fontSize: 15,
+    },
 });
 
 export default AddMedicationScreen;

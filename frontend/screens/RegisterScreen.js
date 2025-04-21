@@ -10,18 +10,20 @@ import {
   TouchableWithoutFeedback, 
   Keyboard, 
   ActivityIndicator,
-  ScrollView
+  ScrollView,
+  ImageBackground
 } from 'react-native';
 import { useUser } from '../context/UserContext';
 import { useRouter } from 'expo-router';
-
-// TODO: dobavi da ima ochence da moje da si vidi parolata i dobavi celiq ekran
+import { Ionicons } from '@expo/vector-icons';
 
 const RegisterScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register, isLoading } = useUser();
   const router = useRouter();
 
@@ -65,68 +67,207 @@ const RegisterScreen = () => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <View style={styles.innerContainer}>
-            <Text style={styles.title}>MedTracker</Text>
-            <Text style={styles.subtitle}>Create an Account</Text>
+    <ImageBackground 
+      source={require('../assets/images/background8.jpg')}
+      style={styles.container}
+      resizeMode="cover"
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.container}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.innerContainer}>
+              <Text style={styles.title}>MedsTracker</Text>
+              <Text style={styles.subtitle}>Create an Account</Text>
 
-            <View style={styles.formContainer}>
-              <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Choose a username"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-              />
+              <View style={styles.formContainer}>
+                <Text style={styles.label}>Username</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Choose a username"
+                  value={username}
+                  onChangeText={setUsername}
+                  autoCapitalize="none"
+                />
 
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Create a password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+                <Text style={styles.label}>Password</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[styles.input, styles.passwordInput]}
+                    placeholder="Create a password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity 
+                    style={styles.eyeIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons 
+                      name={showPassword ? "eye-off" : "eye"} 
+                      size={24} 
+                      color="#4a5568" 
+                    />
+                  </TouchableOpacity>
+                </View>
 
-              <Text style={styles.label}>Confirm Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-              />
+                <Text style={styles.label}>Confirm Password</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[styles.input, styles.passwordInput]}
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                  />
+                  <TouchableOpacity 
+                    style={styles.eyeIcon}
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <Ionicons 
+                      name={showConfirmPassword ? "eye-off" : "eye"} 
+                      size={24} 
+                      color="#4a5568" 
+                    />
+                  </TouchableOpacity>
+                </View>
 
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleRegister}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text style={styles.buttonText}>Register</Text>
-                )}
-              </TouchableOpacity>
-
-              <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>Already have an account?</Text>
-                <TouchableOpacity onPress={navigateToLogin}>
-                  <Text style={styles.loginLink}>Log In</Text>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={handleRegister}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text style={styles.buttonText}>Register</Text>
+                  )}
                 </TouchableOpacity>
+
+                <View style={styles.loginContainer}>
+                  <Text style={styles.loginText}>Already have an account?</Text>
+                  <TouchableOpacity onPress={() => router.push('/login')}>
+                    <Text style={styles.loginLink}>Log In</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </ImageBackground>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
+  innerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '600',
+    marginBottom: 10,
+    color: '#2d3748',
+    fontFamily: 'Comfortaa',
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#4a5568',
+    marginBottom: 30,
+    fontFamily: 'Comfortaa',
+  },
+  formContainer: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#4a5568',
+    fontWeight: '500',
+    fontFamily: 'Comfortaa',
+  },
+  input: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 20,
+    fontSize: 16,
+    fontFamily: 'Comfortaa',
+  },
+  button: {
+    backgroundColor: '#4299e1',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Comfortaa',
+  },
+  loginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  loginText: {
+    color: '#4a5568',
+    fontSize: 14,
+    marginRight: 5,
+    fontFamily: 'Comfortaa',
+  },
+  loginLink: {
+    color: '#4299e1',
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: 'Comfortaa',
+  },
+  errorText: {
+    color: '#e53e3e',
+    marginBottom: 10,
+    textAlign: 'center',
+    fontFamily: 'Comfortaa',
+  },
+  passwordContainer: {
+    position: 'relative',
+    marginBottom: 20,
+  },
+  passwordInput: {
+    paddingRight: 50,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    top: 15,
+    zIndex: 1,
+  },
+});
+
+export default RegisterScreen;

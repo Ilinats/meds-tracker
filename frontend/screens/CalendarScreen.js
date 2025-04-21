@@ -6,8 +6,6 @@ import { medicineApi } from '../services/api';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-//TODO: da pazq v async storage-a dali sym vzela medikationite, zashtotot sega kato izlqza ot stranicata to se refreshva
-
 const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [medications, setMedications] = useState([]);

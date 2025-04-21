@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi } from '../services/api';
 
+const TOKEN_EXPIRATION_HOURS = 4;
+
 type User = {
   id: string;
   username: string;
@@ -24,15 +26,33 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const checkTokenExpiration = async (tokenTimestamp: string): Promise<boolean> => {
+    const tokenTime = new Date(tokenTimestamp).getTime();
+    const currentTime = new Date().getTime();
+    const hoursElapsed = (currentTime - tokenTime) / (1000 * 60 * 60);
+    return hoursElapsed < TOKEN_EXPIRATION_HOURS;
+  };
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const userToken = await AsyncStorage.getItem('userToken');
         const userData = await AsyncStorage.getItem('userData');
+        const tokenTimestamp = await AsyncStorage.getItem('tokenTimestamp');
 
-        if (userToken && userData) {
-          setUser(JSON.parse(userData));
-          setIsLoggedIn(true);
+        if (userToken && userData && tokenTimestamp) {
+          const isTokenValid = await checkTokenExpiration(tokenTimestamp);
+          
+          if (isTokenValid) {
+            setUser(JSON.parse(userData));
+            setIsLoggedIn(true);
+          } else {
+            await AsyncStorage.removeItem('userToken');
+            await AsyncStorage.removeItem('userData');
+            await AsyncStorage.removeItem('tokenTimestamp');
+            setUser(null);
+            setIsLoggedIn(false);
+          }
         }
       } catch (error) {
         console.error('Error checking login status:', error);
@@ -50,8 +70,10 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const result = await authApi.login(username, password);
       
       if (result.success) {
+        const currentTime = new Date().toISOString();
         await AsyncStorage.setItem('userToken', result.data.token);
         await AsyncStorage.setItem('userData', JSON.stringify(result.data.user));
+        await AsyncStorage.setItem('tokenTimestamp', currentTime);
         setUser(result.data.user);
         setIsLoggedIn(true);
         return true;
@@ -69,6 +91,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem('tokenTimestamp');
       setUser(null);
       setIsLoggedIn(false);
     } catch (error) {

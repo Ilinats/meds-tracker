@@ -1,6 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { medicineApi } from '../services/api';
+import { useUser } from './UserContext';
 
 const MedicationContext = createContext(null);
 
@@ -8,22 +9,35 @@ export const useMedications = () => useContext(MedicationContext);
 
 export const MedicationProvider = ({ children }) => {
   const queryClient = useQueryClient();
+  const { isLoggedIn } = useUser();
 
   const {
     data: medications = [],
     isLoading: isMedicationsLoading,
     refetch: loadMedications,
-  } = medicineApi.useUserMedicines();
+  } = medicineApi.useUserMedicines({
+    enabled: isLoggedIn,
+    retry: false
+  });
 
   const addMedicationMutation = medicineApi.useAddMedicine();
   const updateMedicationMutation = medicineApi.useUpdateMedicine();
   const removeMedicationMutation = medicineApi.useRemoveMedicine();
   const recordIntakeMutation = medicineApi.useRecordIntake();
 
-  const { data: expiringMedicines = [] } = medicineApi.useExpiringMedicines();
-  const { data: lowStockMedicines = [] } = medicineApi.useLowStockMedicines();
+  const { data: expiringMedicines = [] } = medicineApi.useExpiringMedicines({
+    enabled: isLoggedIn,
+    retry: false
+  });
+  
+  const { data: lowStockMedicines = [] } = medicineApi.useLowStockMedicines({
+    enabled: isLoggedIn,
+    retry: false
+  });
 
   const addMedication = async (medicationData) => {
+    if (!isLoggedIn) return false;
+    
     try {
       const mappedData = {
         name: medicationData.name,
@@ -48,6 +62,8 @@ export const MedicationProvider = ({ children }) => {
   };
 
   const updateMedication = async (id, medicationData) => {
+    if (!isLoggedIn) return false;
+    
     try {
       const mappedData = {
         name: medicationData.name,
@@ -71,6 +87,8 @@ export const MedicationProvider = ({ children }) => {
   };
 
   const deleteMedication = async (id) => {
+    if (!isLoggedIn) return false;
+    
     try {
       await removeMedicationMutation.mutateAsync(id);
       return true;
@@ -81,6 +99,8 @@ export const MedicationProvider = ({ children }) => {
   };
 
   const recordMedicineIntake = async (scheduleId, takenAt = new Date()) => {
+    if (!isLoggedIn) return false;
+    
     try {
       await recordIntakeMutation.mutateAsync({
         scheduleId,

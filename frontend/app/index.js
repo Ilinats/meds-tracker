@@ -1,4 +1,3 @@
-// app/index.js
 import { Redirect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
@@ -77,19 +76,17 @@ export default function Index() {
 
   useEffect(() => {
     const checkAuth = async () => {
-        // AsyncStorage.clear();
+      AsyncStorage.clear();
       const token = await AsyncStorage.getItem('userToken');
       console.log('Token:', token);
       
-      if (token) {
+      //if (token) {
         setupNotifications();
         await registerForPushNotifications();
-      }
+      //}
       
       setRedirectPath(token ? '/(main)' : '/login');
     };
-    
-    checkAuth();
 
     const subscription = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received!', notification);
@@ -99,6 +96,8 @@ export default function Index() {
       console.log('Notification response received!', response);
       // Handle notification tap/interaction here
     });
+
+    checkAuth();
 
     return () => {
       subscription.remove();
