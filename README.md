@@ -4,7 +4,7 @@ MedsTracker is a  medication management system designed to help users track thei
 
 ## Live API
 
-The API is deployed and accessible at: `[Your deployed API URL]`
+The API is deployed and accessible.
 
 ## Features
 
