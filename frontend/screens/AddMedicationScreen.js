@@ -65,8 +65,8 @@ const AddMedicationScreen = ({ navigation }) => {
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
   const [schedule, setSchedule] = useState({
-    timesOfDay: ['07:00, 12:00'],
-    repeatDays: ['Tuesday', 'Thursday'],
+    timesOfDay: ['07:00, 13:00'],
+    repeatDays: ['Monday', 'Friday'],
     dosageAmount: 1
   });
 

@@ -1,6 +1,7 @@
-import { PrismaClient } from '../../../../prisma/app/generated/prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { EncryptionService } from '../../../utils/encryption';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -43,11 +44,13 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const encryptionKey = EncryptionService.generateEncryptionKey();
     
     const user = await prisma.user.create({
       data: {
         username,
-        password: hashedPassword
+        password: hashedPassword,
+        encryptionKey
       }
     });
 

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/authService';
 import { AuthRequest } from '../../../shared/types/express.types';
-import { PrismaClient, MedicineUnit } from '../../../../prisma/app/generated/prisma/client';
-
+//import { PrismaClient, MedicineUnit } from '../../../../prisma/app/generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,8 @@ export const register = async (req: Request, res: Response) => {
       data: {
         user: {
           id: user.id,
-          username: user.username
+          username: user.username,
+          encryptionKey: user.encryptionKey
         },
         token
       }

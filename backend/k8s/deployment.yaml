@@ -17,7 +17,7 @@ spec:
       - name: regcred 
       containers:
       - name: meds-tracker-api
-        image: samiko123/meds-tracker:v1.2
+        image: samiko123/meds-tracker:v1.3
         imagePullPolicy: Always  
         envFrom:                            
         - configMapRef:

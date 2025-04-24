@@ -1,4 +1,5 @@
-import { PrismaClient, MedicineUnit } from '../../prisma/app/generated/prisma/client';
+//import { PrismaClient, MedicineUnit } from '../../prisma/app/generated/prisma/client';
+import { PrismaClient, MedicineUnit } from '@prisma/client';
 import fs from 'fs/promises';
 import path from 'path';
 

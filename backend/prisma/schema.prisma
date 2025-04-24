@@ -20,6 +20,7 @@ model User {
   username              String              @unique
   password              String
   pushToken             String?   
+  encryptionKey         String              @unique
   medicines             UserMedicine[] 
   schedules             MedicineSchedule[]
   medicineTakenRecords  MedicineTaken[]     
@@ -60,6 +61,7 @@ model UserMedicine {
   endDate          DateTime?
   dosagePerDay     Float?
   prescription     String?
+  encryptedData    String?          // Added for encrypted sensitive data
 
   userId           String
   user             User             @relation(fields: [userId], references: [id])
