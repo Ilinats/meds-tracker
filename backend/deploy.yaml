@@ -1,0 +1,21 @@
+---
+- name: Deploy meds-tracker to DigitalOcean
+  hosts: localhost
+  vars:
+    image_tag: "v1.3"  # default, can be overridden with --extra-vars
+    docker_image: "samiko123/meds-tracker"
+
+  tasks:
+    - name: Build Docker image
+      ansible.builtin.command: >
+        docker build -t {{ docker_image }}:{{ image_tag }} .
+      args:
+        chdir: "{{ playbook_dir }}"
+
+    - name: Push Docker image to Docker Hub
+      ansible.builtin.command: >
+        docker push {{ docker_image }}:{{ image_tag }}
+
+    - name: Delete all pods in meds-tracker namespace (DOKS)
+      ansible.builtin.command: >
+        kubectl delete pods --all -n meds-tracker
