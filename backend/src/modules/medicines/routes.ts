@@ -21,7 +21,7 @@ router.use(decryptSensitiveData);
 
 router.post('/collection', addToCollection);
 router.delete('/collection/:id', removeFromCollection);
-router.get('/preset', getAllPresetMedicines);
+router.get('/presets', getAllPresetMedicines);
 router.get('/collection', getUserMedicines);
 router.put('/collection/:id', updateUserMedicine);
 router.post('/intake/:scheduleId', recordMedicineIntake);
