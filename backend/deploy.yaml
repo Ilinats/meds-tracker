@@ -2,7 +2,7 @@
 - name: Deploy meds-tracker to DigitalOcean
   hosts: localhost
   vars:
-    image_tag: "v1.3"  # default, can be overridden with --extra-vars
+    image_tag: "v1.3"  
     docker_image: "samiko123/meds-tracker"
 
   tasks:

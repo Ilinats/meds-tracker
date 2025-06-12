@@ -1,10 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 import { AuthModule } from './modules/auth';
 import { MedicinesModule } from './modules/medicines';
 import { SchedulerModule } from './modules/scheduler';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware } from './shared/middleware/auth.middleware';
+import { swaggerSpec } from './shared/config/swagger';
+
 const prisma = new PrismaClient();
 
 const app = express();
@@ -14,6 +17,9 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Swagger documentation route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 if (process.env.NODE_ENV !== 'test') {
   SchedulerModule.initialize();

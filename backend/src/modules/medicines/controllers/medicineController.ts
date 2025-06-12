@@ -28,25 +28,26 @@ export const addToCollection = async (req: AuthRequest, res: Response) => {
       schedules
     } = req.body;
 
+    const parsedQuantity = Number(quantity);
+    const quantityToSave = !isNaN(parsedQuantity) ? parsedQuantity : 20;
+
     const medicine = await prisma.userMedicine.create({
       data: {
         name,
         category,
         unit: unit as MedicineUnit,
-        quantity: !isNaN(Number(quantity)) ? Number(quantity) : 0,
+        quantity: quantityToSave,
         expiryDate: new Date(expiryDate),
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         dosagePerDay: dosagePerDay ? Number(dosagePerDay) : null,
         prescription,
         isPreset: Boolean(presetMedicineId),
-        // Connect to the user
         user: {
           connect: {
             id: userId
           }
         },
-        // Connect to preset medicine if provided
         ...(presetMedicineId && {
           presetMedicine: {
             connect: {
@@ -54,14 +55,12 @@ export const addToCollection = async (req: AuthRequest, res: Response) => {
             }
           }
         }),
-        // Create schedules
         ...(schedules && {
           schedules: {
             create: schedules.map((schedule: any) => ({
               timesOfDay: Array.isArray(schedule.timesOfDay) ? schedule.timesOfDay : [],
               repeatDays: Array.isArray(schedule.repeatDays) ? schedule.repeatDays : [],
               dosageAmount: Number(schedule.dosageAmount) || 1,
-              // Connect schedule to user
               user: {
                 connect: {
                   id: userId
@@ -175,130 +174,6 @@ export const getAllPresetMedicines = async (req: AuthRequest, res: Response) => 
   }
 };
 
-// export const getUserMedicines = async (req: AuthRequest, res: Response) => {
-//   try {
-//     const userId = req.user?.id;
-//     if (!userId) {
-//       res.status(401).json({ error: 'Unauthorized' });
-//       return;
-//     }
-
-//     const user = await prisma.user.findUnique({
-//       where: { id: userId }
-//     });
-
-//     if (!user?.encryptionKey) {
-//       res.status(500).json({ error: 'User encryption key not found' });
-//       return;
-//     }
-
-//     const medicines = await prisma.userMedicine.findMany({
-//       where: { userId },
-//       include: {
-//         presetMedicine: true,
-//         schedules: true
-//       }
-//     });
-
-//     const decryptedMedicines = medicines.map(medicine => {
-//       const decryptedMedicine = { ...medicine, presetMedicine: medicine.presetMedicine };
-
-//       // Decrypt top-level fields
-//       if (medicine.name) {
-//         try {
-//           decryptedMedicine.name = EncryptionService.decrypt(medicine.name, user.encryptionKey);
-//         } catch (error) {
-//           console.error('Failed to decrypt name:', error);
-//         }
-//       }
-
-//       if (medicine.category) {
-//         try {
-//           decryptedMedicine.category = EncryptionService.decrypt(medicine.category, user.encryptionKey);
-//         } catch (error) {
-//           console.error('Failed to decrypt category:', error);
-//         }
-//       }
-
-//       if (medicine.prescription) {
-//         try {
-//           decryptedMedicine.prescription = EncryptionService.decrypt(medicine.prescription, user.encryptionKey);
-//         } catch (error) {
-//           console.error('Failed to decrypt prescription:', error);
-//         }
-//       }
-
-//       if (medicine.dosagePerDay !== null && medicine.dosagePerDay !== undefined) {
-//         try {
-//           const decryptedDosage = EncryptionService.decrypt(medicine.dosagePerDay.toString(), user.encryptionKey);
-//           decryptedMedicine.dosagePerDay = parseFloat(decryptedDosage);
-//         } catch (error) {
-//           console.error('Failed to decrypt dosagePerDay:', error);
-//         }
-//       }
-
-//       // Decrypt schedules
-//       if (medicine.schedules) {
-//         decryptedMedicine.schedules = medicine.schedules.map(schedule => {
-//           const decryptedSchedule = { ...schedule };
-
-//           if (schedule.timesOfDay) {
-//             try {
-//               decryptedSchedule.timesOfDay = schedule.timesOfDay.map(time =>
-//                 EncryptionService.decrypt(time, user.encryptionKey)
-//               );
-//             } catch (error) {
-//               console.error('Failed to decrypt timesOfDay:', error);
-//             }
-//           }
-
-//           if (schedule.repeatDays) {
-//             try {
-//               decryptedSchedule.repeatDays = schedule.repeatDays.map(day =>
-//                 EncryptionService.decrypt(day, user.encryptionKey)
-//               );
-//             } catch (error) {
-//               console.error('Failed to decrypt repeatDays:', error);
-//             }
-//           }
-
-//           if (schedule.dosageAmount !== null && schedule.dosageAmount !== undefined) {
-//             try {
-//               const decryptedAmount = EncryptionService.decrypt(schedule.dosageAmount.toString(), user.encryptionKey);
-//               decryptedSchedule.dosageAmount = parseFloat(decryptedAmount);
-//             } catch (error) {
-//               console.error('Failed to decrypt dosageAmount:', error);
-//             }
-//           }
-
-//           return decryptedSchedule;
-//         });
-//       }
-
-//       return decryptedMedicine;
-//     });
-
-//     // Extract unique presetMedicine entries to return as `presetData.medicines`
-//     const presetMedicinesMap = new Map();
-//     decryptedMedicines.forEach(med => {
-//       if (med.presetMedicine && med.presetMedicine.id) {
-//         presetMedicinesMap.set(med.presetMedicine.id, med.presetMedicine);
-//       }
-//     });
-
-//     res.json({
-//       success: true,
-//       data: decryptedMedicines,
-//       presetData: {
-//         medicines: Array.from(presetMedicinesMap.values())
-//       }
-//     });
-//   } catch (error) {
-//     console.error('Error fetching medicines:', error);
-//     res.status(500).json({ error: 'Failed to fetch medicines' });
-//   }
-// };
-
 export const getUserMedicines = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -344,7 +219,6 @@ export const getUserMedicines = async (req: AuthRequest, res: Response) => {
     const decryptedMedicines = medicines.map(medicine => {
       const decryptedMedicine = { ...medicine, presetMedicine: medicine.presetMedicine };
 
-      // Decrypt top-level fields
       if (medicine.name) {
         try {
           decryptedMedicine.name = EncryptionService.decrypt(medicine.name, user.encryptionKey);
@@ -378,7 +252,6 @@ export const getUserMedicines = async (req: AuthRequest, res: Response) => {
         }
       }
 
-      // Decrypt schedules
       if (medicine.schedules) {
         decryptedMedicine.schedules = medicine.schedules.map(schedule => {
           const decryptedSchedule = { ...schedule };
@@ -419,7 +292,6 @@ export const getUserMedicines = async (req: AuthRequest, res: Response) => {
       return decryptedMedicine;
     });
 
-    // Extract unique presetMedicine entries to return as `presetData.medicines`
     const presetMedicinesMap = new Map();
     decryptedMedicines.forEach(med => {
       if (med.presetMedicine && med.presetMedicine.id) {
@@ -466,7 +338,6 @@ export const updateUserMedicine = async (req: AuthRequest, res: Response) => {
       ...updateData
     } = req.body;
 
-    // All sensitive fields are already encrypted by the middleware
     const medicine = await prisma.userMedicine.update({
       where: { id, userId },
       data: {
